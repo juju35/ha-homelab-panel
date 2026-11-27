@@ -141,5 +141,14 @@
   "install": "Atjaunināt",
   "sync_error": "sinhronizācijas kļūda",
   "containers_n": "Konteineri: {n}",
-  "no_problem": "Nav ko ziņot."
+  "no_problem": "Nav ko ziņot.",
+  "bk_ok": "Aktuāls",
+  "bk_late": "Kavējas",
+  "bk_failed": "Neizdevās",
+  "bk_running": "Notiek",
+  "bk_unknown": "Vēl nav dublējuma",
+  "back_up": "Dublēt",
+  "newest": "Jaunākais dublējums",
+  "total_size": "Kopējais izmērs",
+  "in_time": "pēc {time}"
 }

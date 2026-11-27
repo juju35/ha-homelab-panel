@@ -249,6 +249,26 @@ for (const it of items.filter((i) => i.kind === "container")) {
   reg(`update.${k}`, it.id, "dockhand");
   reg(`button.${k}_restart`, it.id, "dockhand", "restart");
 }
+// Backups: Home Assistant's own (the backup integration), each Proxmox VE node's, and a Duplicati job that failed
+for (const id of ["sensor.backup_last_successful_automatic_backup", "sensor.backup_last_attempted_automatic_backup", "sensor.backup_next_scheduled_automatic_backup"])
+  states[id].attributes = { device_class: "timestamp" };
+dev("dev_backup", "Backup", "Home Assistant Backup");
+reg("sensor.backup_last_successful_automatic_backup", "dev_backup", "backup", "last_successful_automatic_backup");
+reg("sensor.backup_last_attempted_automatic_backup", "dev_backup", "backup", "last_attempted_automatic_backup");
+reg("sensor.backup_next_scheduled_automatic_backup", "dev_backup", "backup", "next_scheduled_automatic_backup");
+reg("sensor.backup_backup_manager_state", "dev_backup", "backup", "backup_manager_state");
+for (const k of ["pve_1", "pve_2"]) {
+  dev(`dev_${k}`, k.replace("_", "-"), "Node");
+  states[`sensor.${k}_last_backup`].attributes = { device_class: "timestamp" };
+  reg(`sensor.${k}_last_backup`, `dev_${k}`, "proxmoxve", "last_backup");
+  reg(set(`sensor.${k}_backup_status`, "ok"), `dev_${k}`, "proxmoxve", "backup_status");
+}
+dev("dev_dup", "Photos to cloud", "Backup job");
+reg(set("sensor.photos_to_cloud_last_backup", ago(30 * 3600), { device_class: "timestamp" }), "dev_dup", "duplicati");
+reg(set("sensor.photos_to_cloud_status", "Error"), "dev_dup", "duplicati");
+reg(set("sensor.photos_to_cloud_backup_size", 412, { unit_of_measurement: "GB" }), "dev_dup", "duplicati");
+reg(set("sensor.photos_to_cloud_next_run", later(5 * 3600), { device_class: "timestamp" }), "dev_dup", "duplicati");
+reg(set("button.photos_to_cloud_create_backup", "unknown"), "dev_dup", "duplicati");
 
 /** The last 24 hours of sensors, for the tiles' curves: a smooth wave around each current value. */
 export const historyOf = (ids) =>

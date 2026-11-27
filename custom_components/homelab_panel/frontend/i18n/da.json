@@ -141,5 +141,14 @@
   "install": "Opdater",
   "sync_error": "synkroniseringsfejl",
   "containers_n": "containere: {n}",
-  "no_problem": "Intet at bemærke."
+  "no_problem": "Intet at bemærke.",
+  "bk_ok": "Opdateret",
+  "bk_late": "Forsinket",
+  "bk_failed": "Mislykket",
+  "bk_running": "Kører",
+  "bk_unknown": "Ingen backup endnu",
+  "back_up": "Tag backup",
+  "newest": "Nyeste backup",
+  "total_size": "Samlet størrelse",
+  "in_time": "om {time}"
 }

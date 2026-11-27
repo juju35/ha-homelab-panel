@@ -4,6 +4,7 @@ import "./core.js";
 import "./drawings.js";
 import "./model.js";
 import "./detail.js";
+import "./backup.js";
 import "./scene.js";
 import "./styles.js";
 import "./tabs.js";
@@ -14,6 +15,7 @@ export { HOMELAB_EN, HOMELAB_LANGS, HOMELAB_PANEL_VERSION, homelabAgo, homelabBy
 export { homelabNasSvg } from "./drawings.js";
 export { homelabModel } from "./model.js";
 export { homelabContainerStats, homelabDockerEnvs, homelabDockerStats, homelabNasDetail, homelabSpark } from "./detail.js";
-export { homelabContainersRich, homelabStorageRich } from "./rich.js";
+export { homelabBackupSources, homelabBackupState } from "./backup.js";
+export { homelabBackupsRich, homelabContainersRich, homelabStorageRich } from "./rich.js";
 export { homelabScene } from "./scene.js";
 export { HomelabPanel } from "./panel.js";

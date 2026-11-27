@@ -141,5 +141,14 @@
   "install": "Aktualizuj",
   "sync_error": "błąd synchronizacji",
   "containers_n": "Kontenery: {n}",
-  "no_problem": "Nic do zgłoszenia."
+  "no_problem": "Nic do zgłoszenia.",
+  "bk_ok": "Aktualna",
+  "bk_late": "Opóźniona",
+  "bk_failed": "Nieudana",
+  "bk_running": "W toku",
+  "bk_unknown": "Brak kopii",
+  "back_up": "Utwórz kopię",
+  "newest": "Najnowsza kopia",
+  "total_size": "Łączny rozmiar",
+  "in_time": "za {time}"
 }

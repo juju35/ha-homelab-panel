@@ -141,5 +141,14 @@
   "install": "Posodobi",
   "sync_error": "napaka sinhronizacije",
   "containers_n": "Vsebniki: {n}",
-  "no_problem": "Ni ničesar za poročati."
+  "no_problem": "Ni ničesar za poročati.",
+  "bk_ok": "Posodobljeno",
+  "bk_late": "Zamuja",
+  "bk_failed": "Neuspešno",
+  "bk_running": "V teku",
+  "bk_unknown": "Še ni varnostne kopije",
+  "back_up": "Varnostno kopiraj",
+  "newest": "Najnovejša kopija",
+  "total_size": "Skupna velikost",
+  "in_time": "čez {time}"
 }

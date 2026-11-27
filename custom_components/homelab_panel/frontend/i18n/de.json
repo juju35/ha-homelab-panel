@@ -141,5 +141,14 @@
   "install": "Aktualisieren",
   "sync_error": "Sync-Fehler",
   "containers_n": "Container: {n}",
-  "no_problem": "Alles in Ordnung."
+  "no_problem": "Alles in Ordnung.",
+  "bk_ok": "Aktuell",
+  "bk_late": "Verspätet",
+  "bk_failed": "Fehlgeschlagen",
+  "bk_running": "Läuft",
+  "bk_unknown": "Noch keine Sicherung",
+  "back_up": "Sichern",
+  "newest": "Neueste Sicherung",
+  "total_size": "Gesamtgröße",
+  "in_time": "in {time}"
 }

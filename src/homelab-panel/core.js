@@ -179,6 +179,15 @@ export const HOMELAB_EN = {
   sync_error: "sync error",
   containers_n: "containers: {n}",
   no_problem: "Nothing needs attention.",
+  bk_ok: "Up to date",
+  bk_late: "Late",
+  bk_failed: "Failed",
+  bk_running: "Running",
+  bk_unknown: "No backup yet",
+  back_up: "Back up",
+  newest: "Newest backup",
+  total_size: "Total size",
+  in_time: "in {time}",
 };
 
 /** HTML-escaped text: every value read from a state or a registry goes through it. */

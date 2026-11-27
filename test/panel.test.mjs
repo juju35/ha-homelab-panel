@@ -245,3 +245,19 @@ test("the rich Storage and Containers tabs, the image update asked first", async
   await new Promise((r) => setTimeout(r));
   assert.deepEqual(calls, [["update", "install", { entity_id: "update.uptime_kuma" }]]);
 });
+
+test("backups: every source with its state, a backup started its own way", async () => {
+  const hass = { states, entities, devices };
+  const sources = lib.homelabBackupSources(hass);
+  assert.deepEqual(sources.map((x) => x.platform).sort(), ["backup", "duplicati", "proxmoxve", "proxmoxve"]);
+  const dup = sources.find((x) => x.platform === "duplicati");
+  assert.equal(lib.homelabBackupState(hass, dup, NOW).status, "failed");
+  assert.equal(lib.homelabBackupState(hass, sources.find((x) => x.platform === "backup"), NOW).status, "ok");
+  const { p, calls, html } = panel("/backups", { entities, devices });
+  assert.match(html(), /Photos to cloud/);
+  assert.match(html(), /data-bkrun=/);
+  assert.doesNotMatch(html(), /undefined|NaN|\[object Object\]/);
+  p._onClick({ composedPath: () => [{ dataset: { bkrun: dup.key } }], target: null });
+  await new Promise((r) => setTimeout(r));
+  assert.deepEqual(calls, [["button", "press", { entity_id: "button.photos_to_cloud_create_backup" }]]);
+});

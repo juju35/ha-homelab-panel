@@ -141,5 +141,14 @@
   "install": "Actualizează",
   "sync_error": "eroare de sincronizare",
   "containers_n": "containere: {n}",
-  "no_problem": "Nimic de semnalat."
+  "no_problem": "Nimic de semnalat.",
+  "bk_ok": "La zi",
+  "bk_late": "Întârziat",
+  "bk_failed": "Eșuat",
+  "bk_running": "În curs",
+  "bk_unknown": "Încă nicio copie",
+  "back_up": "Fă o copie",
+  "newest": "Cea mai recentă copie",
+  "total_size": "Dimensiune totală",
+  "in_time": "în {time}"
 }

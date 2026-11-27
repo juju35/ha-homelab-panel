@@ -141,5 +141,14 @@
   "install": "Mettre à jour",
   "sync_error": "erreur de synchro",
   "containers_n": "conteneurs : {n}",
-  "no_problem": "Rien à signaler."
+  "no_problem": "Rien à signaler.",
+  "bk_ok": "À jour",
+  "bk_late": "En retard",
+  "bk_failed": "En échec",
+  "bk_running": "En cours",
+  "bk_unknown": "Aucune sauvegarde",
+  "back_up": "Sauvegarder",
+  "newest": "Dernière sauvegarde",
+  "total_size": "Taille totale",
+  "in_time": "dans {time}"
 }

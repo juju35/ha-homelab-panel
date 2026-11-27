@@ -141,5 +141,14 @@
   "install": "Ažuriraj",
   "sync_error": "greška sinhronizacije",
   "containers_n": "Kontejneri: {n}",
-  "no_problem": "Nema ničeg za prijavu."
+  "no_problem": "Nema ničeg za prijavu.",
+  "bk_ok": "Ažurno",
+  "bk_late": "Kasni",
+  "bk_failed": "Neuspešno",
+  "bk_running": "U toku",
+  "bk_unknown": "Još nema rezervne kopije",
+  "back_up": "Napravi kopiju",
+  "newest": "Najnovija kopija",
+  "total_size": "Ukupna veličina",
+  "in_time": "za {time}"
 }

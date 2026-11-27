@@ -141,5 +141,14 @@
   "install": "Frissítés",
   "sync_error": "szinkronizálási hiba",
   "containers_n": "konténerek: {n}",
-  "no_problem": "Nincs teendő."
+  "no_problem": "Nincs teendő.",
+  "bk_ok": "Naprakész",
+  "bk_late": "Késésben",
+  "bk_failed": "Sikertelen",
+  "bk_running": "Folyamatban",
+  "bk_unknown": "Még nincs mentés",
+  "back_up": "Mentés",
+  "newest": "Legutóbbi mentés",
+  "total_size": "Teljes méret",
+  "in_time": "{time} múlva"
 }

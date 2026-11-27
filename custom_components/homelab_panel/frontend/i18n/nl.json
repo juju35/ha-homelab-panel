@@ -141,5 +141,14 @@
   "install": "Bijwerken",
   "sync_error": "synchronisatiefout",
   "containers_n": "containers: {n}",
-  "no_problem": "Niets te melden."
+  "no_problem": "Niets te melden.",
+  "bk_ok": "Bijgewerkt",
+  "bk_late": "Te laat",
+  "bk_failed": "Mislukt",
+  "bk_running": "Bezig",
+  "bk_unknown": "Nog geen back-up",
+  "back_up": "Back-up maken",
+  "newest": "Nieuwste back-up",
+  "total_size": "Totale grootte",
+  "in_time": "over {time}"
 }

@@ -3,7 +3,8 @@
 // (model, temperature, state, hours) and fans, with its restart and shutdown buttons; per Docker host its CPU and
 // memory over 24 hours, containers running, counters, stacks and containers (search, sort, attention only) with
 // their start / stop, restart and image update buttons. Every value read from a state is escaped (homelabEsc).
-import { homelabBar, homelabBytes, homelabDuration, homelabEsc, homelabFmt, homelabNum, homelabState, homelabValue } from "./core.js";
+import { homelabAgo, homelabBar, homelabBytes, homelabDuration, homelabEsc, homelabFmt, homelabNum, homelabState, homelabValue } from "./core.js";
+import { HOMELAB_BK_MAX_AGE, homelabBackupState } from "./backup.js";
 import { homelabContainerStats, homelabDockerClass, homelabDockerStats, homelabNasDetail, homelabSpark } from "./detail.js";
 import { homelabNasSvg, homelabUid } from "./drawings.js";
 
@@ -223,3 +224,55 @@ const homelabEnvCard = (c, env, i) => {
 
 /** The Containers tab: one rich card per Dockhand environment or Portainer endpoint, or null without any. */
 export const homelabContainersRich = (c, envs) => (envs && envs.length ? `<div class="grid">${envs.map((env, i) => homelabEnvCard(c, env, i)).join("")}</div>` : null);
+
+// ── Backups ──────────────────────────────────────────────────────────────────────────────────────────────────────
+const HOMELAB_BK_RANK = { failed: 0, late: 1, unknown: 2, running: 3, ok: 4 };
+const HOMELAB_BK_CLS = { failed: "crit", late: "warn", unknown: "", running: "run", ok: "ok" };
+/** A ring that empties as the last good backup gets older (full just after it, empty at its limit). */
+const homelabBkRing = (frac, cls) => {
+  const r = 18;
+  const len = 2 * Math.PI * r;
+  const f = Math.max(0, Math.min(1, frac));
+  return `<svg class="bkring ${cls}" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle cx="22" cy="22" r="${r}" class="bg"/><circle cx="22" cy="22" r="${r}" class="fg" stroke-dasharray="${(f * len).toFixed(1)} ${len.toFixed(1)}" transform="rotate(-90 22 22)"/></svg>`;
+};
+
+/** The Backups tab as in ha-backup-card: a summary, then one row per source with its age, size, next and its button. */
+export const homelabBackupsRich = (c, sources, started = {}) => {
+  if (!sources || !sources.length) return null;
+  const { t, lang } = c;
+  const items = sources
+    .map((src) => ({ src, s: homelabBackupState(c.hass, src, c.now, started[src.key] || 0) }))
+    .sort((a, b) => HOMELAB_BK_RANK[a.s.status] - HOMELAB_BK_RANK[b.s.status] || a.src.name.localeCompare(b.src.name));
+  const worst = items[0].s.status;
+  const newest = Math.max(...items.map((x) => x.s.last ?? 0));
+  const nexts = items.map((x) => x.s.next).filter((n) => n !== null && n > c.now);
+  const total = items.reduce((a, x) => a + (x.s.size ?? 0), 0);
+  const failed = items.filter((x) => x.s.status === "failed").length;
+  const late = items.filter((x) => x.s.status === "late").length;
+  const ago = (ms) => homelabAgo(ms / 1000, c.strings);
+  const kpi = (label, value, cls = "") => `<div class="tile"><span class="k">${homelabEsc(label)}</span><b class="${cls}">${homelabEsc(value)}</b></div>`;
+  const summary = `<div class="card"><h3>${homelabEsc(t("backups"))}<span class="pill ${HOMELAB_BK_CLS[worst] === "run" ? "ok" : HOMELAB_BK_CLS[worst] || "na"}"><i></i>${homelabEsc(t(`bk_${worst}`))}</span></h3><div class="pair bkk">${[
+    kpi(t("newest"), newest ? ago(c.now - newest) : t("never"), newest && c.now - newest > HOMELAB_BK_MAX_AGE ? "warn" : ""),
+    kpi(t("bk_failed"), String(failed), failed ? "crit" : ""),
+    kpi(t("bk_late"), String(late), late ? "warn" : ""),
+    kpi(t("next"), nexts.length ? t("in_time", { time: homelabDuration((Math.min(...nexts) - c.now) / 1000, c.strings) }) : "—"),
+    total ? kpi(t("total_size"), homelabBytes(total, lang)) : "",
+  ].join("")}</div></div>`;
+  const rows = items
+    .map(({ src, s }) => {
+      const cls = HOMELAB_BK_CLS[s.status];
+      const frac = s.status === "failed" || s.status === "late" ? 1 : s.age === null ? 0 : 1 - s.age / s.limit;
+      const line = [
+        s.last !== null ? `${t("last")} ${ago(c.now - s.last)}` : t("never"),
+        s.size !== null ? homelabBytes(s.size, lang) : "",
+        s.next !== null && s.next > c.now ? `${t("next")} ${t("in_time", { time: homelabDuration((s.next - c.now) / 1000, c.strings) })}` : "",
+        s.failed && s.failedAt ? `${t("bk_failed")} ${ago(c.now - s.failedAt)}` : "",
+      ].filter(Boolean);
+      const canRun = Array.isArray(src.run) || (src.button && homelabState(c.hass, src.button));
+      const btn = canRun ? `<button class="btn accent" data-bkrun="${homelabEsc(src.key)}"${s.running ? " disabled" : ""}>${homelabEsc(s.running ? t("bk_running") : t("back_up"))}</button>` : "";
+      const more = src.drive || src.parts.last || src.parts.status || "";
+      return `<div class="bkr ${cls === "crit" ? "bad" : cls === "warn" ? "mid" : ""}"><button class="bkring-b" data-more="${homelabEsc(more)}"${more ? "" : " disabled"} aria-label="${homelabEsc(src.name)}">${s.running ? '<span class="bkspin"></span>' : homelabBkRing(frac, cls)}</button><div class="grow"><div class="ctn"><b>${homelabEsc(src.name)}</b>${src.sub ? `<span class="muted">${homelabEsc(src.sub)}</span>` : ""}<span class="chip ${cls === "run" ? "ok" : cls}">${homelabEsc(t(`bk_${s.status}`))}</span></div><div class="muted ctd">${homelabEsc(line.join(" · "))}</div></div>${btn}</div>`;
+    })
+    .join("");
+  return `${summary}<div style="height:14px"></div><div class="card"><div class="rows">${rows}</div></div>`;
+};

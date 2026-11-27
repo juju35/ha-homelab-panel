@@ -141,5 +141,14 @@
   "install": "Aktualizovat",
   "sync_error": "chyba synchronizace",
   "containers_n": "Kontejnery: {n}",
-  "no_problem": "Nic k hlášení."
+  "no_problem": "Nic k hlášení.",
+  "bk_ok": "Aktuální",
+  "bk_late": "Opožděno",
+  "bk_failed": "Selhalo",
+  "bk_running": "Probíhá",
+  "bk_unknown": "Zatím bez zálohy",
+  "back_up": "Zálohovat",
+  "newest": "Nejnovější záloha",
+  "total_size": "Celková velikost",
+  "in_time": "za {time}"
 }

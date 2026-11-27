@@ -141,5 +141,14 @@
   "install": "Uppdatera",
   "sync_error": "synkroniseringsfel",
   "containers_n": "containrar: {n}",
-  "no_problem": "Inget att rapportera."
+  "no_problem": "Inget att rapportera.",
+  "bk_ok": "Aktuell",
+  "bk_late": "Försenad",
+  "bk_failed": "Misslyckad",
+  "bk_running": "Pågår",
+  "bk_unknown": "Ingen säkerhetskopia än",
+  "back_up": "Säkerhetskopiera",
+  "newest": "Senaste säkerhetskopia",
+  "total_size": "Total storlek",
+  "in_time": "om {time}"
 }

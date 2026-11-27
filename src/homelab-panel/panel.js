@@ -4,7 +4,8 @@ import { HOMELAB_TABS, homelabEsc, homelabLang, homelabLoadStrings, homelabPill,
 import { homelabModel } from "./model.js";
 import { homelabScene } from "./scene.js";
 import { homelabDockerEnvs, homelabNasDetail } from "./detail.js";
-import { homelabContainersRich, homelabHistoryIds, homelabStorageRich } from "./rich.js";
+import { homelabBackupSources } from "./backup.js";
+import { homelabBackupsRich, homelabContainersRich, homelabHistoryIds, homelabStorageRich } from "./rich.js";
 import { HOMELAB_STYLE } from "./styles.js";
 import { homelabBackups, homelabContainers, homelabHosts, homelabOverview, homelabServices, homelabSettings, homelabStorage } from "./tabs.js";
 
@@ -23,6 +24,8 @@ export class HomelabPanel extends HTMLElement {
     this._hist = {};
     this._histAt = 0;
     this._watch = [];
+    // Backups started from the panel: running until the source reports a newer one
+    this._bkStarted = {};
     this.shadowRoot.addEventListener("click", (ev) => this._onClick(ev));
     this.shadowRoot.addEventListener("change", (ev) => this._onChange(ev));
     this.shadowRoot.addEventListener("input", (ev) => this._onInput(ev));
@@ -123,13 +126,14 @@ export class HomelabPanel extends HTMLElement {
     // Dockhand environments and Portainer endpoints the inventory keeps (a source left out in the settings is not shown)
     const hostIds = new Set(m.dockerHosts.map((d) => d.id));
     const envs = (homelabDockerEnvs(this._hass) || []).filter((e) => hostIds.has(e.id));
+    const bkSources = homelabBackupSources(this._hass);
     // A tab with nothing to show is hidden once the inventory is known (overview and settings always stay)
     const has = {
       hosts: m.hosts.length || m.guests.length,
       containers: m.containers.length,
       storage: m.nas.length,
       services: m.services.length || m.proxies.length || m.certificates.length,
-      backups: m.backups.length || m.hosts.some((h) => h.entities.last_backup),
+      backups: m.backups.length || m.hosts.some((h) => h.entities.last_backup) || !!bkSources?.length,
     };
     const shownTabs = HOMELAB_TABS.filter((k) => !this._inv?.configured || !(k in has) || has[k]);
     const tab = shownTabs.includes(this._tab) ? this._tab : "overview";
@@ -151,10 +155,10 @@ export class HomelabPanel extends HTMLElement {
         },
         storage: () => homelabStorageRich(m, ctx) ?? homelabStorage(m, ctx),
         services: () => homelabServices(m, ctx),
-        backups: () => homelabBackups(m, ctx),
+        backups: () => homelabBackupsRich(ctx, bkSources, this._bkStarted) ?? homelabBackups(m, ctx),
         settings: () => homelabSettings(this._inv, this._settings || {}, ctx),
       }[tab]();
-    this._watch = tab === "storage" || tab === "containers" ? this._watchIds(m, ctx, envs, tab) : [];
+    this._watch = tab === "storage" || tab === "containers" ? this._watchIds(m, ctx, envs, tab) : tab === "backups" && bkSources ? bkSources.flatMap((x) => [x.drive, ...Object.values(x.parts || {})]).filter(Boolean) : [];
     if (tab === "storage" || tab === "containers") this._loadHistory(homelabHistoryIds(tab === "storage" ? m : { nas: [] }, ctx, tab === "containers" ? envs : []));
     const alerts = m.alerts.length;
     const pill = this._inv ? homelabPill(alerts ? t("pill_alerts", { n: alerts }) : t("pill_ok"), alerts ? (m.alerts.some((a) => ["host", "service", "ups"].includes(a.kind)) ? "crit" : "warn") : "ok") : "";
@@ -259,6 +263,8 @@ export class HomelabPanel extends HTMLElement {
     if (d.tab) this._navigate(d.tab);
     else if (d.more !== undefined) {
       if (d.more) this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId: d.more }, bubbles: true, composed: true }));
+    } else if (d.bkrun) {
+      this._runBackup(d.bkrun);
     } else if (d.ctsort) {
       this._ct = { ...this._ct, sort: d.ctsort };
       this._render(true);
@@ -289,6 +295,18 @@ export class HomelabPanel extends HTMLElement {
       this._confirm = null;
       this._render(true);
     }
+  }
+
+  /** Starts a backup of a source its own way: a service (Home Assistant, Auto Backup) or its device's button. */
+  async _runBackup(key) {
+    const src = (homelabBackupSources(this._hass) || []).find((x) => x.key === key);
+    if (!src) return;
+    this._bkStarted = { ...this._bkStarted, [key]: Date.now() };
+    this._render(true);
+    if (Array.isArray(src.run)) await this._hass.callService(src.run[0], src.run[1], { ...src.run[2] });
+    else if (src.button) await this._hass.callService("button", "press", { entity_id: src.button });
+    // Rendered again once the « running » state started from the panel has expired (the timer never holds a page open)
+    setTimeout(() => this._render(true), 121000)?.unref?.();
   }
 
   _onInput(ev) {
