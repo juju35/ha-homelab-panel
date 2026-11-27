@@ -81,8 +81,12 @@ export const homelabModel = (inv, hass, settings = {}, now = Date.now()) => {
   }));
   const containers = of("container").map((c) => {
     const update = homelabState(hass, c.entities.update);
+    // Dockhand names its devices "<environment> – Containers – <name>": the container's own name is the last part
+    const parts = String(c.name).split(" – ");
     return {
       ...c,
+      name: parts[parts.length - 1],
+      env: parts.length > 1 ? parts[0] : null,
       up: homelabContainerUp(hass, c),
       cpu: homelabNum(hass, c.entities.cpu),
       ram: homelabBytesOf(hass, c.entities.ram),

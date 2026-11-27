@@ -1,6 +1,6 @@
 {
   "name": "ha-homelab-panel",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Home Assistant sidebar panel for the homelab: Proxmox VE hosts, Docker containers, NAS, UPS, services, backups and certificates.",
   "private": true,
   "type": "module",
