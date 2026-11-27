@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.2 - 2026-11-27
+
+### Fixes
+- Devices of a NAS integration that report nothing a NAS does (no CPU, storage or temperature: a dashboard plugin, an update only) are no longer counted as NAS.
+- The NAS usage reads the volume's own used and total sizes before its pool's, which were always full (100 %).
+- The NAS rows show the model under the name, cut with an ellipsis instead of wrapping.
+- The summary tiles share the whole width; the Proxmox rack is drawn in the top bar only when Proxmox is there.
+
 ## 1.0.1 - 2026-11-27
 
 ### Fixes
