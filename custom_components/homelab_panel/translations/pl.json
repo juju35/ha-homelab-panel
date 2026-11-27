@@ -1,0 +1,44 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Homelab Panel",
+        "description": "Dodaje panel Homelab do paska bocznego: hosty Proxmox VE, kontenery Docker, NAS, UPS, monitorowane usługi, kopie zapasowe i certyfikaty, odczytywane z posiadanych integracji.",
+        "data": {
+          "sources": "Wyświetlane źródła"
+        },
+        "data_description": {
+          "sources": "Integracje odczytywane przez panel. Już skonfigurowane są zaznaczone; możesz je później zmienić."
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Homelab Panel jest już skonfigurowany."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Wyświetlane źródła",
+        "description": "Integracje odczytywane przez panel.",
+        "data": {
+          "sources": "Wyświetlane źródła"
+        }
+      }
+    }
+  },
+  "selector": {
+    "sources": {
+      "options": {
+        "proxmox": "Proxmox VE",
+        "docker": "Docker (Dockhand, Monitor Docker, Portainer)",
+        "nas": "NAS (UGREEN, Synology, QNAP)",
+        "ups": "UPS (NUT, apcupsd)",
+        "services": "Usługi (Uptime Kuma)",
+        "proxy": "Odwrotne proxy",
+        "backups": "Kopie zapasowe",
+        "certificates": "Certyfikaty"
+      }
+    }
+  }
+}

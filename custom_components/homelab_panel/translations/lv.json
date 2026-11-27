@@ -1,0 +1,44 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Homelab Panel",
+        "description": "Pievieno sānjoslai paneli Homelab: Proxmox VE resursdatorus, Docker konteinerus, NAS, UPS, uzraudzītos pakalpojumus, rezerves kopijas un sertifikātus no jau esošajām integrācijām.",
+        "data": {
+          "sources": "Rādītie avoti"
+        },
+        "data_description": {
+          "sources": "Integrācijas, ko panelis nolasa. Jau iestatītās ir atzīmētas; tās var mainīt vēlāk."
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Homelab Panel jau ir iestatīts."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Rādītie avoti",
+        "description": "Integrācijas, ko panelis nolasa.",
+        "data": {
+          "sources": "Rādītie avoti"
+        }
+      }
+    }
+  },
+  "selector": {
+    "sources": {
+      "options": {
+        "proxmox": "Proxmox VE",
+        "docker": "Docker (Dockhand, Monitor Docker, Portainer)",
+        "nas": "NAS (UGREEN, Synology, QNAP)",
+        "ups": "UPS (NUT, apcupsd)",
+        "services": "Pakalpojumi (Uptime Kuma)",
+        "proxy": "Reversais starpniekserveris",
+        "backups": "Rezerves kopijas",
+        "certificates": "Sertifikāti"
+      }
+    }
+  }
+}

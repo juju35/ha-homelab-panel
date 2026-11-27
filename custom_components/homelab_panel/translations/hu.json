@@ -1,0 +1,44 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Homelab Panel",
+        "description": "Hozzáadja a Homelab panelt az oldalsávhoz: Proxmox VE gazdagépek, Docker konténerek, NAS, szünetmentes, figyelt szolgáltatások, biztonsági mentések és tanúsítványok a meglévő integrációkból.",
+        "data": {
+          "sources": "Megjelenített források"
+        },
+        "data_description": {
+          "sources": "A panel által olvasott integrációk. A már beállítottak ki vannak jelölve; később módosíthatók."
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "A Homelab Panel már be van állítva."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Megjelenített források",
+        "description": "A panel által olvasott integrációk.",
+        "data": {
+          "sources": "Megjelenített források"
+        }
+      }
+    }
+  },
+  "selector": {
+    "sources": {
+      "options": {
+        "proxmox": "Proxmox VE",
+        "docker": "Docker (Dockhand, Monitor Docker, Portainer)",
+        "nas": "NAS (UGREEN, Synology, QNAP)",
+        "ups": "Szünetmentes (NUT, apcupsd)",
+        "services": "Szolgáltatások (Uptime Kuma)",
+        "proxy": "Fordított proxy",
+        "backups": "Biztonsági mentések",
+        "certificates": "Tanúsítványok"
+      }
+    }
+  }
+}

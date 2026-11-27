@@ -1,0 +1,44 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Homelab Panel",
+        "description": "Pridá panel Homelab do bočného panela: hostitelia Proxmox VE, kontajnery Docker, NAS, UPS, monitorované služby, zálohy a certifikáty z integrácií, ktoré už máte.",
+        "data": {
+          "sources": "Zobrazené zdroje"
+        },
+        "data_description": {
+          "sources": "Integrácie, ktoré panel číta. Už nastavené sú označené; môžete ich neskôr zmeniť."
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Homelab Panel je už nastavený."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Zobrazené zdroje",
+        "description": "Integrácie, ktoré panel číta.",
+        "data": {
+          "sources": "Zobrazené zdroje"
+        }
+      }
+    }
+  },
+  "selector": {
+    "sources": {
+      "options": {
+        "proxmox": "Proxmox VE",
+        "docker": "Docker (Dockhand, Monitor Docker, Portainer)",
+        "nas": "NAS (UGREEN, Synology, QNAP)",
+        "ups": "UPS (NUT, apcupsd)",
+        "services": "Služby (Uptime Kuma)",
+        "proxy": "Reverzné proxy",
+        "backups": "Zálohy",
+        "certificates": "Certifikáty"
+      }
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Homelab Panel",
+        "description": "Voegt het Homelab-paneel toe aan de zijbalk: Proxmox VE-hosts, Docker-containers, NAS, UPS, bewaakte diensten, back-ups en certificaten, gelezen uit de integraties die je al hebt.",
+        "data": {
+          "sources": "Getoonde bronnen"
+        },
+        "data_description": {
+          "sources": "De integraties die het paneel leest. Al ingestelde zijn aangevinkt; je kunt ze later wijzigen."
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Homelab Panel is al ingesteld."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Getoonde bronnen",
+        "description": "De integraties die het paneel leest.",
+        "data": {
+          "sources": "Getoonde bronnen"
+        }
+      }
+    }
+  },
+  "selector": {
+    "sources": {
+      "options": {
+        "proxmox": "Proxmox VE",
+        "docker": "Docker (Dockhand, Monitor Docker, Portainer)",
+        "nas": "NAS (UGREEN, Synology, QNAP)",
+        "ups": "UPS (NUT, apcupsd)",
+        "services": "Diensten (Uptime Kuma)",
+        "proxy": "Reverse proxy",
+        "backups": "Back-ups",
+        "certificates": "Certificaten"
+      }
+    }
+  }
+}

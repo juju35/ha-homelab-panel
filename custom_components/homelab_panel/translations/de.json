@@ -1,0 +1,44 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Homelab Panel",
+        "description": "Fügt der Seitenleiste das Homelab-Panel hinzu: Proxmox-VE-Hosts, Docker-Container, NAS, USV, überwachte Dienste, Backups und Zertifikate, gelesen aus Ihren vorhandenen Integrationen.",
+        "data": {
+          "sources": "Angezeigte Quellen"
+        },
+        "data_description": {
+          "sources": "Die Integrationen, die das Panel liest. Bereits eingerichtete sind ausgewählt; Sie können sie später ändern."
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Homelab Panel ist bereits eingerichtet."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Angezeigte Quellen",
+        "description": "Die Integrationen, die das Panel liest.",
+        "data": {
+          "sources": "Angezeigte Quellen"
+        }
+      }
+    }
+  },
+  "selector": {
+    "sources": {
+      "options": {
+        "proxmox": "Proxmox VE",
+        "docker": "Docker (Dockhand, Monitor Docker, Portainer)",
+        "nas": "NAS (UGREEN, Synology, QNAP)",
+        "ups": "USV (NUT, apcupsd)",
+        "services": "Dienste (Uptime Kuma)",
+        "proxy": "Reverse Proxy",
+        "backups": "Backups",
+        "certificates": "Zertifikate"
+      }
+    }
+  }
+}

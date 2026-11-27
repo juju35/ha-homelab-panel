@@ -1,0 +1,44 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Homelab Panel",
+        "description": "Προσθέτει τον πίνακα Homelab στην πλαϊνή μπάρα: hosts Proxmox VE, κοντέινερ Docker, NAS, UPS, παρακολουθούμενες υπηρεσίες, αντίγραφα ασφαλείας και πιστοποιητικά, από τις ενσωματώσεις που ήδη έχετε.",
+        "data": {
+          "sources": "Εμφανιζόμενες πηγές"
+        },
+        "data_description": {
+          "sources": "Οι ενσωματώσεις που διαβάζει ο πίνακας. Όσες έχουν ήδη ρυθμιστεί είναι επιλεγμένες· μπορείτε να τις αλλάξετε αργότερα."
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Το Homelab Panel έχει ήδη ρυθμιστεί."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Εμφανιζόμενες πηγές",
+        "description": "Οι ενσωματώσεις που διαβάζει ο πίνακας.",
+        "data": {
+          "sources": "Εμφανιζόμενες πηγές"
+        }
+      }
+    }
+  },
+  "selector": {
+    "sources": {
+      "options": {
+        "proxmox": "Proxmox VE",
+        "docker": "Docker (Dockhand, Monitor Docker, Portainer)",
+        "nas": "NAS (UGREEN, Synology, QNAP)",
+        "ups": "UPS (NUT, apcupsd)",
+        "services": "Υπηρεσίες (Uptime Kuma)",
+        "proxy": "Αντίστροφος διακομιστής μεσολάβησης",
+        "backups": "Αντίγραφα ασφαλείας",
+        "certificates": "Πιστοποιητικά"
+      }
+    }
+  }
+}

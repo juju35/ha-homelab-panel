@@ -1,0 +1,44 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Homelab Panel",
+        "description": "Doda ploščo Homelab v stransko vrstico: gostitelje Proxmox VE, vsebnike Docker, NAS, UPS, nadzorovane storitve, varnostne kopije in certifikate iz integracij, ki jih že imate.",
+        "data": {
+          "sources": "Prikazani viri"
+        },
+        "data_description": {
+          "sources": "Integracije, ki jih plošča bere. Že nastavljene so izbrane; pozneje jih lahko spremenite."
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Homelab Panel je že nastavljen."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Prikazani viri",
+        "description": "Integracije, ki jih plošča bere.",
+        "data": {
+          "sources": "Prikazani viri"
+        }
+      }
+    }
+  },
+  "selector": {
+    "sources": {
+      "options": {
+        "proxmox": "Proxmox VE",
+        "docker": "Docker (Dockhand, Monitor Docker, Portainer)",
+        "nas": "NAS (UGREEN, Synology, QNAP)",
+        "ups": "UPS (NUT, apcupsd)",
+        "services": "Storitve (Uptime Kuma)",
+        "proxy": "Povratni proxy",
+        "backups": "Varnostne kopije",
+        "certificates": "Certifikati"
+      }
+    }
+  }
+}
