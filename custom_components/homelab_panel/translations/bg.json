@@ -1,0 +1,44 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Homelab Panel",
+        "description": "Добавя панела Homelab в страничната лента: хостове на Proxmox VE, Docker контейнери, NAS, UPS, наблюдавани услуги, резервни копия и сертификати, от интеграциите, които вече имате.",
+        "data": {
+          "sources": "Показвани източници"
+        },
+        "data_description": {
+          "sources": "Интеграциите, които панелът чете. Вече настроените са избрани; можете да ги промените по-късно."
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Homelab Panel вече е настроен."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Показвани източници",
+        "description": "Интеграциите, които панелът чете.",
+        "data": {
+          "sources": "Показвани източници"
+        }
+      }
+    }
+  },
+  "selector": {
+    "sources": {
+      "options": {
+        "proxmox": "Proxmox VE",
+        "docker": "Docker (Dockhand, Monitor Docker, Portainer)",
+        "nas": "NAS (UGREEN, Synology, QNAP)",
+        "ups": "UPS (NUT, apcupsd)",
+        "services": "Услуги (Uptime Kuma)",
+        "proxy": "Обратен прокси",
+        "backups": "Резервни копия",
+        "certificates": "Сертификати"
+      }
+    }
+  }
+}

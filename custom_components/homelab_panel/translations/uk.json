@@ -1,0 +1,44 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Homelab Panel",
+        "description": "Додає панель Homelab на бічну панель: хости Proxmox VE, контейнери Docker, NAS, ДБЖ, відстежувані сервіси, резервні копії та сертифікати з уже встановлених інтеграцій.",
+        "data": {
+          "sources": "Показувані джерела"
+        },
+        "data_description": {
+          "sources": "Інтеграції, які читає панель. Уже налаштовані позначено; їх можна змінити пізніше."
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Homelab Panel уже налаштовано."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Показувані джерела",
+        "description": "Інтеграції, які читає панель.",
+        "data": {
+          "sources": "Показувані джерела"
+        }
+      }
+    }
+  },
+  "selector": {
+    "sources": {
+      "options": {
+        "proxmox": "Proxmox VE",
+        "docker": "Docker (Dockhand, Monitor Docker, Portainer)",
+        "nas": "NAS (UGREEN, Synology, QNAP)",
+        "ups": "ДБЖ (NUT, apcupsd)",
+        "services": "Сервіси (Uptime Kuma)",
+        "proxy": "Зворотний проксі",
+        "backups": "Резервні копії",
+        "certificates": "Сертифікати"
+      }
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Homelab Panel",
+        "description": "Adaugă panoul Homelab în bara laterală: gazde Proxmox VE, containere Docker, NAS, UPS, servicii monitorizate, copii de rezervă și certificate, citite din integrările pe care le aveți deja.",
+        "data": {
+          "sources": "Surse afișate"
+        },
+        "data_description": {
+          "sources": "Integrările citite de panou. Cele deja configurate sunt bifate; le puteți schimba mai târziu."
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Homelab Panel este deja configurat."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Surse afișate",
+        "description": "Integrările citite de panou.",
+        "data": {
+          "sources": "Surse afișate"
+        }
+      }
+    }
+  },
+  "selector": {
+    "sources": {
+      "options": {
+        "proxmox": "Proxmox VE",
+        "docker": "Docker (Dockhand, Monitor Docker, Portainer)",
+        "nas": "NAS (UGREEN, Synology, QNAP)",
+        "ups": "UPS (NUT, apcupsd)",
+        "services": "Servicii (Uptime Kuma)",
+        "proxy": "Proxy invers",
+        "backups": "Copii de rezervă",
+        "certificates": "Certificate"
+      }
+    }
+  }
+}

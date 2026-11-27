@@ -1,0 +1,44 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Homelab Panel",
+        "description": "Lägger till Homelab-panelen i sidofältet: Proxmox VE-värdar, Docker-containrar, NAS, UPS, övervakade tjänster, säkerhetskopior och certifikat, lästa från de integrationer du redan har.",
+        "data": {
+          "sources": "Visade källor"
+        },
+        "data_description": {
+          "sources": "Integrationerna som panelen läser. De som redan är konfigurerade är valda; du kan ändra dem senare."
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Homelab Panel är redan konfigurerad."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Visade källor",
+        "description": "Integrationerna som panelen läser.",
+        "data": {
+          "sources": "Visade källor"
+        }
+      }
+    }
+  },
+  "selector": {
+    "sources": {
+      "options": {
+        "proxmox": "Proxmox VE",
+        "docker": "Docker (Dockhand, Monitor Docker, Portainer)",
+        "nas": "NAS (UGREEN, Synology, QNAP)",
+        "ups": "UPS (NUT, apcupsd)",
+        "services": "Tjänster (Uptime Kuma)",
+        "proxy": "Omvänd proxy",
+        "backups": "Säkerhetskopior",
+        "certificates": "Certifikat"
+      }
+    }
+  }
+}

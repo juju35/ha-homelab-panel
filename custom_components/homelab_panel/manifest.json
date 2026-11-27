@@ -1,0 +1,15 @@
+{
+  "domain": "homelab_panel",
+  "name": "Homelab Panel",
+  "after_dependencies": ["apcupsd", "backup", "cert_expiry", "nut", "portainer", "proxmoxve", "qnap", "synology_dsm", "uptime_kuma"],
+  "codeowners": ["@juju35"],
+  "config_flow": true,
+  "dependencies": ["frontend", "http", "panel_custom"],
+  "documentation": "https://github.com/juju35/ha-homelab-panel",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/juju35/ha-homelab-panel/issues",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "1.0.0"
+}

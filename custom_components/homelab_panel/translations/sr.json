@@ -1,0 +1,44 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Homelab Panel",
+        "description": "Додаје панел Homelab у бочну траку: Proxmox VE хостове, Docker контејнере, NAS, UPS, надгледане сервисе, резервне копије и сертификате, из интеграција које већ имате.",
+        "data": {
+          "sources": "Приказани извори"
+        },
+        "data_description": {
+          "sources": "Интеграције које панел чита. Већ подешене су означене; можете их касније променити."
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Homelab Panel је већ подешен."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Приказани извори",
+        "description": "Интеграције које панел чита.",
+        "data": {
+          "sources": "Приказани извори"
+        }
+      }
+    }
+  },
+  "selector": {
+    "sources": {
+      "options": {
+        "proxmox": "Proxmox VE",
+        "docker": "Docker (Dockhand, Monitor Docker, Portainer)",
+        "nas": "NAS (UGREEN, Synology, QNAP)",
+        "ups": "UPS (NUT, apcupsd)",
+        "services": "Сервиси (Uptime Kuma)",
+        "proxy": "Реверзни прокси",
+        "backups": "Резервне копије",
+        "certificates": "Сертификати"
+      }
+    }
+  }
+}

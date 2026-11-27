@@ -1,0 +1,44 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Homelab Panel",
+        "description": "Añade el panel Homelab a la barra lateral: hosts de Proxmox VE, contenedores Docker, NAS, SAI, servicios supervisados, copias de seguridad y certificados, leídos de las integraciones que ya tiene.",
+        "data": {
+          "sources": "Fuentes mostradas"
+        },
+        "data_description": {
+          "sources": "Las integraciones que lee el panel. Las ya configuradas están marcadas; puede cambiarlas más tarde."
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Homelab Panel ya está configurado."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Fuentes mostradas",
+        "description": "Las integraciones que lee el panel.",
+        "data": {
+          "sources": "Fuentes mostradas"
+        }
+      }
+    }
+  },
+  "selector": {
+    "sources": {
+      "options": {
+        "proxmox": "Proxmox VE",
+        "docker": "Docker (Dockhand, Monitor Docker, Portainer)",
+        "nas": "NAS (UGREEN, Synology, QNAP)",
+        "ups": "SAI (NUT, apcupsd)",
+        "services": "Servicios (Uptime Kuma)",
+        "proxy": "Proxy inverso",
+        "backups": "Copias de seguridad",
+        "certificates": "Certificados"
+      }
+    }
+  }
+}
