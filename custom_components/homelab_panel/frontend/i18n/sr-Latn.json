@@ -150,5 +150,14 @@
   "back_up": "Napravi kopiju",
   "newest": "Najnovija kopija",
   "total_size": "Ukupna veličina",
-  "in_time": "za {time}"
+  "in_time": "za {time}",
+  "guests_n": "Pokrenute VM i LXC: {n}",
+  "running_of": "{running} / {total} radi",
+  "cert_in": "sertifikat ističe za {n} dana",
+  "review": "Pregledaj",
+  "needs_attention": "Zahteva pažnju",
+  "resources": "Resursi",
+  "last_24h": "poslednja 24 č",
+  "more_n": "+ još {n}",
+  "backups_power": "Rezervne kopije, napajanje i sertifikati"
 }

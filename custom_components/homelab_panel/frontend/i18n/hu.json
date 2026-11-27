@@ -150,5 +150,14 @@
   "back_up": "Mentés",
   "newest": "Legutóbbi mentés",
   "total_size": "Teljes méret",
-  "in_time": "{time} múlva"
+  "in_time": "{time} múlva",
+  "guests_n": "Futó VM-ek és LXC: {n}",
+  "running_of": "{running} / {total} fut",
+  "cert_in": "a tanúsítvány {n} nap múlva lejár",
+  "review": "Megnézem",
+  "needs_attention": "Figyelmet igényel",
+  "resources": "Erőforrások",
+  "last_24h": "utolsó 24 óra",
+  "more_n": "+ még {n}",
+  "backups_power": "Mentések, áram és tanúsítványok"
 }

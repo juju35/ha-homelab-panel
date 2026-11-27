@@ -150,5 +150,14 @@
   "back_up": "Dublēt",
   "newest": "Jaunākais dublējums",
   "total_size": "Kopējais izmērs",
-  "in_time": "pēc {time}"
+  "in_time": "pēc {time}",
+  "guests_n": "Darbojas VM un LXC: {n}",
+  "running_of": "{running} / {total} darbojas",
+  "cert_in": "sertifikāta termiņš beidzas pēc {n} dienām",
+  "review": "Skatīt",
+  "needs_attention": "Nepieciešama uzmanība",
+  "resources": "Resursi",
+  "last_24h": "pēdējās 24 h",
+  "more_n": "+ vēl {n}",
+  "backups_power": "Dublējumi, barošana un sertifikāti"
 }

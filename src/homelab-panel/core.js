@@ -188,6 +188,15 @@ export const HOMELAB_EN = {
   newest: "Newest backup",
   total_size: "Total size",
   in_time: "in {time}",
+  guests_n: "VMs and LXC running: {n}",
+  running_of: "{running} / {total} running",
+  cert_in: "certificate expires in {n} days",
+  review: "Review",
+  needs_attention: "Needs attention",
+  resources: "Resources",
+  last_24h: "last 24 h",
+  more_n: "+ {n} more",
+  backups_power: "Backups, power and certificates",
 };
 
 /** HTML-escaped text: every value read from a state or a registry goes through it. */

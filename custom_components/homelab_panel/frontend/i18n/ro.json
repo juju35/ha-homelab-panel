@@ -150,5 +150,14 @@
   "back_up": "Fă o copie",
   "newest": "Cea mai recentă copie",
   "total_size": "Dimensiune totală",
-  "in_time": "în {time}"
+  "in_time": "în {time}",
+  "guests_n": "VM și LXC pornite: {n}",
+  "running_of": "{running} / {total} pornite",
+  "cert_in": "certificatul expiră în {n} zile",
+  "review": "Vezi",
+  "needs_attention": "Necesită atenție",
+  "resources": "Resurse",
+  "last_24h": "ultimele 24 h",
+  "more_n": "+ încă {n}",
+  "backups_power": "Copii, alimentare și certificate"
 }

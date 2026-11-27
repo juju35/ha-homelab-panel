@@ -150,5 +150,14 @@
   "back_up": "Sauvegarder",
   "newest": "Dernière sauvegarde",
   "total_size": "Taille totale",
-  "in_time": "dans {time}"
+  "in_time": "dans {time}",
+  "guests_n": "VM et LXC en marche : {n}",
+  "running_of": "{running} / {total} en marche",
+  "cert_in": "certificat : expire dans {n} jours",
+  "review": "Voir",
+  "needs_attention": "À traiter",
+  "resources": "Ressources",
+  "last_24h": "dernières 24 h",
+  "more_n": "+ {n} autres",
+  "backups_power": "Sauvegardes, alimentation et certificats"
 }

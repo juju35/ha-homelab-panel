@@ -150,5 +150,14 @@
   "back_up": "Varnostno kopiraj",
   "newest": "Najnovejša kopija",
   "total_size": "Skupna velikost",
-  "in_time": "čez {time}"
+  "in_time": "čez {time}",
+  "guests_n": "Zagnani VM in LXC: {n}",
+  "running_of": "{running} / {total} deluje",
+  "cert_in": "certifikat poteče čez {n} dni",
+  "review": "Poglej",
+  "needs_attention": "Zahteva pozornost",
+  "resources": "Viri",
+  "last_24h": "zadnjih 24 h",
+  "more_n": "+ še {n}",
+  "backups_power": "Varnostne kopije, napajanje in certifikati"
 }

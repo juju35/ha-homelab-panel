@@ -150,5 +150,14 @@
   "back_up": "Zálohovať",
   "newest": "Najnovšia záloha",
   "total_size": "Celková veľkosť",
-  "in_time": "o {time}"
+  "in_time": "o {time}",
+  "guests_n": "Spustené VM a LXC: {n}",
+  "running_of": "{running} / {total} beží",
+  "cert_in": "certifikát vyprší o {n} dní",
+  "review": "Zobraziť",
+  "needs_attention": "Vyžaduje pozornosť",
+  "resources": "Prostriedky",
+  "last_24h": "posledných 24 h",
+  "more_n": "+ ďalších {n}",
+  "backups_power": "Zálohy, napájanie a certifikáty"
 }

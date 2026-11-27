@@ -150,5 +150,14 @@
   "back_up": "Создать копию",
   "newest": "Последняя копия",
   "total_size": "Общий размер",
-  "in_time": "через {time}"
+  "in_time": "через {time}",
+  "guests_n": "Работающие VM и LXC: {n}",
+  "running_of": "{running} / {total} работают",
+  "cert_in": "сертификат истекает через {n} дн.",
+  "review": "Посмотреть",
+  "needs_attention": "Требует внимания",
+  "resources": "Ресурсы",
+  "last_24h": "последние 24 ч",
+  "more_n": "+ ещё {n}",
+  "backups_power": "Копии, питание и сертификаты"
 }

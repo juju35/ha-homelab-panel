@@ -150,5 +150,14 @@
   "back_up": "Utwórz kopię",
   "newest": "Najnowsza kopia",
   "total_size": "Łączny rozmiar",
-  "in_time": "za {time}"
+  "in_time": "za {time}",
+  "guests_n": "Działające VM i LXC: {n}",
+  "running_of": "{running} / {total} działa",
+  "cert_in": "certyfikat wygasa za {n} dni",
+  "review": "Zobacz",
+  "needs_attention": "Wymaga uwagi",
+  "resources": "Zasoby",
+  "last_24h": "ostatnie 24 h",
+  "more_n": "+ {n} więcej",
+  "backups_power": "Kopie, zasilanie i certyfikaty"
 }

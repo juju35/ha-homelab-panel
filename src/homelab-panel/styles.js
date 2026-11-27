@@ -152,6 +152,25 @@ tr:last-child td { border-bottom:0; }
 .bkspin { width:32px; height:32px; border-radius:50%; border:4px solid var(--hl-line); border-top-color:var(--hl-accent); animation:hlspin 1s linear infinite; box-sizing:border-box; }
 @keyframes hlspin { to { transform:rotate(360deg); } }
 @media (prefers-reduced-motion:reduce) { .bkspin { animation:none; } }
+.plan { margin-bottom:14px; padding:14px; }
+.pnodes { display:flex; align-items:stretch; gap:0; flex-wrap:wrap; row-gap:12px; }
+.pnode { flex:1 1 150px; min-width:140px; border:0; background:var(--hl-tile); border-radius:16px; padding:10px 10px 12px; display:flex; flex-direction:column; align-items:center; gap:3px; color:inherit; text-align:center; }
+.pnode:hover { background:var(--hl-accent-soft); }
+.ppic { height:70px; width:100%; display:flex; align-items:flex-end; justify-content:center; margin-bottom:4px; }
+.ppic svg { max-width:100%; display:block; }
+.pwhale { display:block; width:150px; max-width:100%; height:62px; overflow:hidden; border-radius:10px; }
+.pwhale svg { width:100%; height:100%; }
+.pnode b { font-size:13.5px; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pnode .pl { font-size:12px; color:var(--hl-muted); max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pnode .chip { margin-top:5px; }
+.plink { align-self:center; flex:0 0 18px; height:3px; background:repeating-linear-gradient(90deg,var(--hl-accent) 0 5px,transparent 5px 9px); opacity:.8; }
+.ovgrid { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:14px; align-items:start; }
+.ovcol { display:grid; gap:14px; min-width:0; }
+.svcs { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:6px; }
+.svc { display:flex; align-items:center; gap:7px; background:var(--hl-tile); border-radius:10px; padding:7px 10px; font-size:12.5px; min-width:0; }
+.svc span:last-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.svc.bad { background:var(--hl-crit-soft); }
+@media (max-width:980px) { .ovgrid { grid-template-columns:minmax(0,1fr); } .plink { display:none; } .pnodes { gap:10px; } }
 @media (max-width:760px) { .ctu { display:none; } .nashead { flex-wrap:wrap; } }
 @media (max-width:600px) { .htitle .s { display:none; } main { padding:12px 10px 24px; } .kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 `;

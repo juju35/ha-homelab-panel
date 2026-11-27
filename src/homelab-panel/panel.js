@@ -5,7 +5,8 @@ import { homelabModel } from "./model.js";
 import { homelabScene } from "./scene.js";
 import { homelabDockerEnvs, homelabNasDetail } from "./detail.js";
 import { homelabBackupSources } from "./backup.js";
-import { homelabBackupsRich, homelabContainersRich, homelabHistoryIds, homelabStorageRich } from "./rich.js";
+import { homelabBackupsRich, homelabContainersRich, homelabHistoryIds, homelabOverviewHistoryIds, homelabOverviewRich, homelabStorageRich } from "./rich.js";
+import { HOMELAB_DOCKER_SVG, HOMELAB_PVE_SVG, HOMELAB_UPS_SVG, homelabNasSvg, homelabSized, homelabUid } from "./drawings.js";
 import { HOMELAB_STYLE } from "./styles.js";
 import { homelabBackups, homelabContainers, homelabHosts, homelabOverview, homelabServices, homelabSettings, homelabStorage } from "./tabs.js";
 
@@ -144,7 +145,7 @@ export class HomelabPanel extends HTMLElement {
     else if (!this._inv.configured && tab !== "settings") body = `<div class="card empty">${homelabEsc(t("nothing"))}</div>`;
     else
       body = {
-        overview: () => homelabOverview(m, ctx),
+        overview: () => (this._hass.entities ? homelabOverviewRich(m, ctx, envs, bkSources, this._bkStarted, this._planArt()) : homelabOverview(m, ctx)),
         hosts: () => homelabHosts(m, ctx),
         containers: () => {
           const rich = homelabContainersRich(ctx, envs);
@@ -158,7 +159,8 @@ export class HomelabPanel extends HTMLElement {
         backups: () => homelabBackupsRich(ctx, bkSources, this._bkStarted) ?? homelabBackups(m, ctx),
         settings: () => homelabSettings(this._inv, this._settings || {}, ctx),
       }[tab]();
-    this._watch = tab === "storage" || tab === "containers" ? this._watchIds(m, ctx, envs, tab) : tab === "backups" && bkSources ? bkSources.flatMap((x) => [x.drive, ...Object.values(x.parts || {})]).filter(Boolean) : [];
+    this._watch = tab === "overview" && this._hass.entities ? [...this._watchIds(m, ctx, envs, "storage"), ...this._watchIds(m, ctx, envs, "containers"), ...(bkSources || []).flatMap((x) => [x.drive, ...Object.values(x.parts || {})]).filter(Boolean)] : tab === "storage" || tab === "containers" ? this._watchIds(m, ctx, envs, tab) : tab === "backups" && bkSources ? bkSources.flatMap((x) => [x.drive, ...Object.values(x.parts || {})]).filter(Boolean) : [];
+    if (tab === "overview" && this._hass.entities) this._loadHistory(homelabOverviewHistoryIds(m, ctx, envs));
     if (tab === "storage" || tab === "containers") this._loadHistory(homelabHistoryIds(tab === "storage" ? m : { nas: [] }, ctx, tab === "containers" ? envs : []));
     const alerts = m.alerts.length;
     const pill = this._inv ? homelabPill(alerts ? t("pill_alerts", { n: alerts }) : t("pill_ok"), alerts ? (m.alerts.some((a) => ["host", "service", "ups"].includes(a.kind)) ? "crit" : "warn") : "ok") : "";
@@ -176,6 +178,23 @@ export class HomelabPanel extends HTMLElement {
         if (caret !== null) input.setSelectionRange(caret, caret);
       }
     }
+  }
+
+  /** The plan's drawings: the cards' own (Proxmox rack, Docker whale, each NAS from its model, the UPS). */
+  _planArt() {
+    const fit = (svg, uid, h) => homelabUid(svg, uid).replace(/^<svg\b/, `<svg height="${h}" aria-hidden="true" focusable="false"`);
+    return {
+      pve: fit(HOMELAB_PVE_SVG, "pl-pve", 66),
+      docker: `<span class="pwhale">${homelabSized(homelabUid(HOMELAB_DOCKER_SVG, "pl-dk"), "xMaxYMax slice")}</span>`,
+      nas: (n) => {
+        const svg = homelabNasSvg(n.model, n.brand);
+        const vb = svg.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/);
+        const flat = vb && +vb[1] / +vb[2] > 2.2;
+        return fit(svg, `pl-${String(n.id).replace(/\W/g, "")}`, flat ? 38 : 62);
+      },
+      ups: fit(HOMELAB_UPS_SVG, "pl-ups", 62),
+      upsSmall: fit(HOMELAB_UPS_SVG, "pl-ups-s", 34),
+    };
   }
 
   /** Every entity a rich tab reads, so a change of any of them renders it again. */
@@ -263,6 +282,9 @@ export class HomelabPanel extends HTMLElement {
     if (d.tab) this._navigate(d.tab);
     else if (d.more !== undefined) {
       if (d.more) this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId: d.more }, bubbles: true, composed: true }));
+    } else if (d.review !== undefined) {
+      this._ct = { ...this._ct, problems: true };
+      this._navigate("containers");
     } else if (d.bkrun) {
       this._runBackup(d.bkrun);
     } else if (d.ctsort) {

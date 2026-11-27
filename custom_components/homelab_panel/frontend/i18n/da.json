@@ -150,5 +150,14 @@
   "back_up": "Tag backup",
   "newest": "Nyeste backup",
   "total_size": "Samlet størrelse",
-  "in_time": "om {time}"
+  "in_time": "om {time}",
+  "guests_n": "Kørende VM'er og LXC: {n}",
+  "running_of": "{running} / {total} kører",
+  "cert_in": "certifikatet udløber om {n} dage",
+  "review": "Se",
+  "needs_attention": "Kræver opmærksomhed",
+  "resources": "Ressourcer",
+  "last_24h": "seneste 24 t",
+  "more_n": "+ {n} mere",
+  "backups_power": "Backup, strøm og certifikater"
 }

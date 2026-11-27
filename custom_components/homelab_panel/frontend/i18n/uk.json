@@ -150,5 +150,14 @@
   "back_up": "Створити копію",
   "newest": "Остання копія",
   "total_size": "Загальний розмір",
-  "in_time": "через {time}"
+  "in_time": "через {time}",
+  "guests_n": "Запущені VM і LXC: {n}",
+  "running_of": "{running} / {total} працюють",
+  "cert_in": "сертифікат спливає через {n} дн.",
+  "review": "Переглянути",
+  "needs_attention": "Потребує уваги",
+  "resources": "Ресурси",
+  "last_24h": "останні 24 год",
+  "more_n": "+ ще {n}",
+  "backups_power": "Копії, живлення та сертифікати"
 }

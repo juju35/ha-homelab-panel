@@ -276,3 +276,162 @@ export const homelabBackupsRich = (c, sources, started = {}) => {
     .join("");
   return `${summary}<div style="height:14px"></div><div class="card"><div class="rows">${rows}</div></div>`;
 };
+
+// ── Overview ─────────────────────────────────────────────────────────────────────────────────────────────────────
+/** A NAS's headline figures from its detail (volumes added up, as the Storage tab does), else from the inventory. */
+export const homelabNasFigures = (c, n) => {
+  const d = homelabNasDetail(c.hass, n, c.items);
+  const s = d?.scalars || {};
+  let used = null;
+  let total = null;
+  let pct = null;
+  for (const p of d?.pools || [])
+    for (const v of p.volumes) {
+      const u = homelabSizeOf(c.hass, v.used);
+      const t = homelabSizeOf(c.hass, v.total);
+      if (u !== null && t) {
+        used = (used ?? 0) + u;
+        total = (total ?? 0) + t;
+      } else if (pct === null) pct = homelabNum(c.hass, v.used_pct);
+    }
+  if (used !== null && total) pct = (100 * used) / total;
+  const status = homelabValue(c.hass, s.server_status);
+  return {
+    pct: pct ?? n.pct,
+    used: used ?? n.used,
+    total: total ?? n.total,
+    temp: homelabNum(c.hass, s.sys_temp) ?? homelabNum(c.hass, s.cpu_temp) ?? n.temp,
+    cpu: homelabNum(c.hass, s.cpu_usage) ?? n.cpu,
+    cpuId: s.cpu_usage || n.entities.cpu,
+    downId: s.lan_down,
+    down: homelabRateOf(c.hass, s.lan_down),
+    healthy: status === null ? n.healthy && !n.disks.some((k) => !k.ok || k.hot) : homelabHealth(status) !== "crit",
+  };
+};
+
+const homelabPlanNode = (pic, name, lines, cls, label, tab) =>
+  `<button class="pnode" data-tab="${tab}"><span class="ppic">${pic}</span><b>${homelabEsc(name)}</b>${lines
+    .filter(Boolean)
+    .map((l) => `<span class="pl">${homelabEsc(l)}</span>`)
+    .join("")}<span class="chip ${cls}">${homelabEsc(label)}</span></button>`;
+
+/**
+ * The overview: the homelab drawn as a plan (each machine with its figures and state), then what needs attention with
+ * its action, the resources over 24 hours, the services, and the backups, the UPS and the certificates.
+ */
+export const homelabOverviewRich = (m, c, envs, sources, started, art) => {
+  const { t, lang, hass } = c;
+  const nodes = [];
+  if (m.hosts.length) {
+    const up = m.hosts.filter((h) => h.up).length;
+    const guests = m.guests.filter((g) => g.up).length;
+    nodes.push(homelabPlanNode(art.pve, m.hosts.length > 1 ? `Proxmox · ${m.hosts.length}` : m.hosts[0].name, [`${t("cpu")} ${m.hosts.map((h) => homelabRichPct(h.cpu, lang)).join(" · ")}`, t("guests_n", { n: guests })], up === m.hosts.length ? "ok" : "crit", up === m.hosts.length ? t("online") : t("offline"), "hosts"));
+  }
+  const ctStats = envs.map((env) => ({ env, st: homelabDockerStats(hass, env) }));
+  if (ctStats.length)
+    for (const { env, st } of ctStats) {
+      const total = st.containers ?? env.containers.length;
+      const running = st.running ?? env.containers.filter((ct) => homelabContainerStats(hass, ct).cls === "ok").length;
+      const stopped = total - running;
+      nodes.push(homelabPlanNode(art.docker, env.name, [t("running_of", { running, total }), st.updates ? t("updates_n", { n: st.updates }) : `${t("cpu")} ${homelabRichPct(st.cpu, lang)}`], stopped ? "crit" : st.updates ? "warn" : "ok", stopped ? t("stopped_n", { n: stopped }) : t("all_running"), "containers"));
+    }
+  else if (m.containers.length) {
+    const stopped = m.containers.filter((x) => !x.up).length;
+    nodes.push(homelabPlanNode(art.docker, "Docker", [t("running_of", { running: m.containers.length - stopped, total: m.containers.length })], stopped ? "crit" : "ok", stopped ? t("stopped_n", { n: stopped }) : t("all_running"), "containers"));
+  }
+  const nasFig = m.nas.map((n) => ({ n, f: homelabNasFigures(c, n) }));
+  for (const { n, f } of nasFig)
+    nodes.push(homelabPlanNode(art.nas(n), n.name, [f.used !== null && f.total ? `${homelabRichPct(f.pct, lang)} · ${homelabBytes(f.used, lang)} / ${homelabBytes(f.total, lang)}` : homelabRichPct(f.pct, lang), f.temp !== null ? `${homelabFmt(f.temp, lang)} °C` : ""], f.healthy ? (f.pct !== null && f.pct >= 90 ? "warn" : "ok") : "warn", f.healthy ? t("healthy") : t("attention"), "storage"));
+  for (const u of m.ups)
+    nodes.push(homelabPlanNode(art.ups, u.name, [`${homelabRichPct(u.battery, lang)} · ${homelabDuration(u.runtime, c.strings)}`, u.power !== null ? `${homelabFmt(u.power, lang)} W` : ""], u.onBattery ? "warn" : "ok", u.onBattery ? t("on_battery") : t("on_mains"), "storage"));
+  const plan = nodes.length ? `<div class="card plan"><div class="pnodes">${nodes.join('<span class="plink" aria-hidden="true"></span>')}</div></div>` : "";
+
+  // What needs attention, the worst first, each with its action
+  const act = (op, entity, name, label, cls, a = "press") => homelabRichBtn(c, a, entity, name, op, label, cls);
+  const att = [];
+  for (const h of m.hosts.filter((x) => !x.up)) att.push(["crit", `<b>${homelabEsc(h.name)}</b> · ${homelabEsc(t("offline"))}`, ""]);
+  for (const env of envs)
+    for (const ct of env.containers) {
+      const x = homelabContainerStats(hass, ct);
+      if (x.cls === "crit" && (c.showStopped || x.unhealthy)) att.push(["crit", `<b>${homelabEsc(ct.name)}</b> · ${homelabEsc(x.unhealthy ? t("unhealthy") : t("st_stopped"))}`, x.toggle && !x.on ? act("start", x.toggle, ct.name, t("start"), "danger", "toggle") : ""]);
+    }
+  if (!envs.length) for (const x of m.containers.filter((y) => !y.up)) att.push(["crit", `<b>${homelabEsc(x.name)}</b> · ${homelabEsc(t("st_stopped"))}`, act("start", x.entities.start || x.entities.switch, x.name, t("start"), "danger", x.entities.start ? "press" : "toggle")]);
+  for (const s of m.services.filter((x) => x.status === "down")) att.push(["crit", `<b>${homelabEsc(s.name)}</b> · ${homelabEsc(t("svc_down"))}`, ""]);
+  const bk = (sources || []).map((src) => ({ src, s: homelabBackupState(hass, src, c.now, started[src.key] || 0) }));
+  for (const { src, s } of bk.filter((x) => x.s.status === "failed" || x.s.status === "late"))
+    att.push([s.status === "failed" ? "crit" : "warn", `<b>${homelabEsc(src.name)}</b> · ${homelabEsc(s.status === "failed" ? t("bk_failed") : t("bk_late"))}${s.last !== null ? ` · ${homelabEsc(homelabAgo((c.now - s.last) / 1000, c.strings))}` : ""}`, Array.isArray(src.run) || src.button ? `<button class="btn accent" data-bkrun="${homelabEsc(src.key)}">${homelabEsc(t("back_up"))}</button>` : ""]);
+  for (const { n, f } of nasFig.filter((x) => !x.f.healthy)) att.push(["warn", `<b>${homelabEsc(n.name)}</b> · ${homelabEsc(t("attention"))}`, ""]);
+  for (const u of m.ups.filter((x) => x.onBattery)) att.push(["warn", `<b>${homelabEsc(u.name)}</b> · ${homelabEsc(t("on_battery"))} · ${homelabEsc(homelabDuration(u.runtime, c.strings))}`, ""]);
+  for (const x of m.certificates.filter((y) => y.days !== null && y.days <= m.certDays)) att.push([x.days < 0 ? "crit" : "warn", `<b>${homelabEsc(x.name)}</b> · ${homelabEsc(x.days < 0 ? t("expired") : t("cert_in", { n: x.days }))}`, ""]);
+  const upd = envs.flatMap((env) => env.containers.filter((ct) => homelabContainerStats(hass, ct).update).map((ct) => ct.name));
+  const updNames = upd.length ? upd : m.containers.filter((x) => x.update).map((x) => x.name);
+  if (updNames.length) att.push(["warn", `<b>${homelabEsc(t("updates_n", { n: updNames.length }))}</b> · ${homelabEsc(updNames.slice(0, 4).join(", "))}${updNames.length > 4 ? "…" : ""}`, `<button class="btn warn" data-review>${homelabEsc(t("review"))}</button>`]);
+  att.sort((a, b) => (a[0] === b[0] ? 0 : a[0] === "crit" ? -1 : 1));
+  const attention = `<div class="card"><h3>${homelabEsc(t("needs_attention"))}<small>${att.length || ""}</small></h3><div class="rows">${
+    att.length ? att.map(([cls, text, btn]) => `<div class="row ${cls === "crit" ? "bad" : "mid"}"><span class="dot ${cls}"></span><span class="grow">${text}</span>${btn}</div>`).join("") : `<div class="row"><span class="dot ok"></span><span class="grow">${homelabEsc(t("no_problem"))}</span></div>`
+  }</div></div>`;
+
+  // Resources over 24 hours
+  const tiles = [];
+  for (const h of m.hosts) {
+    tiles.push(homelabGauge(c, h.entities.cpu, `${h.name} · ${t("cpu")}`, homelabRichPct(h.cpu, lang), homelabRichLevel(h.cpu, 75, 90)));
+    tiles.push(homelabGauge(c, h.entities.ram, `${h.name} · ${t("ram")}`, homelabRichPct(h.ram, lang), homelabRichLevel(h.ram, 80, 92)));
+  }
+  for (const { env, st } of ctStats) {
+    tiles.push(homelabGauge(c, st.cpuId, `${env.name} · ${t("cpu")}`, homelabRichPct(st.cpu, lang), homelabRichLevel(st.cpu, 75, 90)));
+    tiles.push(homelabGauge(c, st.memId, `${env.name} · ${t("ram")}`, homelabRichPct(st.mem, lang), homelabRichLevel(st.mem, 80, 92)));
+  }
+  for (const { n, f } of nasFig) {
+    if (f.cpuId) tiles.push(homelabGauge(c, f.cpuId, `${n.name} · ${t("cpu")}`, homelabRichPct(f.cpu, lang), homelabRichLevel(f.cpu, 75, 90)));
+    if (f.downId) tiles.push(homelabGauge(c, f.downId, `${n.name} · ↓`, homelabRate(f.down, lang), "", null));
+  }
+  const resources = tiles.length ? `<div class="card"><h3>${homelabEsc(t("resources"))}<small>${homelabEsc(t("last_24h"))}</small></h3><div class="gauges">${tiles.join("")}</div></div>` : "";
+
+  // Services, the down ones first
+  const order = { down: 0, pending: 1, maintenance: 2, up: 3 };
+  const svcs = [...m.services].sort((a, b) => (order[a.status] ?? 4) - (order[b.status] ?? 4) || a.name.localeCompare(b.name));
+  const upN = svcs.filter((s) => s.status === "up").length;
+  const services = svcs.length
+    ? `<div class="card"><h3>${homelabEsc(t("services"))}<small>${homelabEsc(`Uptime Kuma · ${upN} / ${svcs.length}`)}</small></h3><div class="svcs">${svcs
+        .slice(0, 16)
+        .map((s) => {
+          const cls = s.status === "up" ? "ok" : s.status === "down" ? "crit" : "warn";
+          return `<div class="svc ${cls === "crit" ? "bad" : ""}" title="${homelabEsc(s.response !== null && s.status === "up" ? `${homelabFmt(s.response, lang)} ms` : t(`svc_${s.status || "pending"}`))}"><span class="dot ${cls}"></span><span>${homelabEsc(s.name)}</span></div>`;
+        })
+        .join("")}</div>${svcs.length > 16 ? `<div class="k" style="margin-top:8px">${homelabEsc(t("more_n", { n: svcs.length - 16 }))}</div>` : ""}</div>`
+    : "";
+
+  // Backups, UPS and certificates
+  const rows = [];
+  for (const { src, s } of bk.sort((a, b) => a.src.name.localeCompare(b.src.name))) {
+    const cls = { failed: "crit", late: "warn", running: "", unknown: "", ok: "" }[s.status];
+    const frac = s.status === "failed" || s.status === "late" ? 1 : s.age === null ? 0 : 1 - s.age / s.limit;
+    const line = [s.last !== null ? homelabAgo((c.now - s.last) / 1000, c.strings) : t("never"), s.size !== null ? homelabBytes(s.size, lang) : "", s.next !== null && s.next > c.now ? `${t("next")} ${t("in_time", { time: homelabDuration((s.next - c.now) / 1000, c.strings) })}` : ""].filter(Boolean).join(" · ");
+    rows.push(`<div class="bkr ${cls === "crit" ? "bad" : cls === "warn" ? "mid" : ""}"><span class="bkring-b">${s.running ? '<span class="bkspin"></span>' : homelabBkRing(frac, cls)}</span><div class="grow"><div class="ctn"><b>${homelabEsc(src.name)}</b></div><div class="muted ctd">${homelabEsc(line)}</div></div><span class="chip ${cls || "ok"}">${homelabEsc(t(`bk_${s.status}`))}</span></div>`);
+  }
+  if (!bk.length)
+    for (const b of m.backups) rows.push(`<div class="row ${b.failed ? "bad" : b.late ? "mid" : ""}"><span class="grow">${homelabEsc(b.name)}</span><span class="end ${b.failed ? "crit" : b.late ? "warn" : "ok"}">${homelabEsc(b.failed ? t("failed") : homelabAgo(b.last, c.strings))}</span></div>`);
+  for (const u of m.ups)
+    rows.push(`<div class="bkr"><span class="bkring-b">${art.upsSmall}</span><div class="grow"><div class="ctn"><b>${homelabEsc(u.name)}</b></div><div class="muted ctd">${homelabEsc([homelabRichPct(u.battery, lang), `${t("load")} ${homelabRichPct(u.load, lang)}`, u.power !== null ? `${homelabFmt(u.power, lang)} W` : "", homelabDuration(u.runtime, c.strings)].filter(Boolean).join(" · "))}</div></div><span class="chip ${u.onBattery ? "warn" : "ok"}">${homelabEsc(u.onBattery ? t("on_battery") : t("on_mains"))}</span></div>`);
+  for (const x of [...m.certificates].sort((a, b) => (a.days ?? 1e9) - (b.days ?? 1e9))) {
+    const cls = x.days === null ? "" : x.days < 0 ? "crit" : x.days <= m.certDays ? "warn" : "ok";
+    rows.push(`<div class="row ${cls === "crit" ? "bad" : cls === "warn" ? "mid" : ""}"><span class="grow">${homelabEsc(x.name)}</span><span class="end ${cls}">${homelabEsc(x.days === null ? "—" : x.days < 0 ? t("expired") : t("in_days", { n: x.days }))}</span></div>`);
+  }
+  const health = rows.length ? `<div class="card"><h3>${homelabEsc(t("backups_power"))}</h3><div class="rows">${rows.join("")}</div></div>` : "";
+  return `${plan}<div class="ovgrid"><div class="ovcol">${attention}${resources}</div><div class="ovcol">${services}${health}</div></div>`;
+};
+
+/** The entities whose last 24 hours the overview draws. */
+export const homelabOverviewHistoryIds = (m, c, envs) => {
+  const ids = [];
+  for (const h of m.hosts) ids.push(h.entities.cpu, h.entities.ram);
+  for (const env of envs) {
+    const st = homelabDockerStats(c.hass, env);
+    ids.push(st.cpuId, st.memId);
+  }
+  for (const n of m.nas) {
+    const f = homelabNasFigures(c, n);
+    ids.push(f.cpuId, f.downId);
+  }
+  return [...new Set(ids.filter((id) => id && c.hass.states[id]))];
+};

@@ -150,5 +150,14 @@
   "back_up": "Hacer copia",
   "newest": "Última copia",
   "total_size": "Tamaño total",
-  "in_time": "en {time}"
+  "in_time": "en {time}",
+  "guests_n": "VM y LXC en marcha: {n}",
+  "running_of": "{running} / {total} en marcha",
+  "cert_in": "el certificado caduca en {n} días",
+  "review": "Ver",
+  "needs_attention": "Requiere atención",
+  "resources": "Recursos",
+  "last_24h": "últimas 24 h",
+  "more_n": "+ {n} más",
+  "backups_power": "Copias, energía y certificados"
 }

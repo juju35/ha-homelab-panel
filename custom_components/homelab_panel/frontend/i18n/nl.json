@@ -150,5 +150,14 @@
   "back_up": "Back-up maken",
   "newest": "Nieuwste back-up",
   "total_size": "Totale grootte",
-  "in_time": "over {time}"
+  "in_time": "over {time}",
+  "guests_n": "Actieve VM's en LXC: {n}",
+  "running_of": "{running} / {total} actief",
+  "cert_in": "certificaat verloopt over {n} dagen",
+  "review": "Bekijken",
+  "needs_attention": "Aandacht nodig",
+  "resources": "Bronnen",
+  "last_24h": "laatste 24 u",
+  "more_n": "+ {n} meer",
+  "backups_power": "Back-ups, stroom en certificaten"
 }

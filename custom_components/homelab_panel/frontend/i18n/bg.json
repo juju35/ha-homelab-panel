@@ -150,5 +150,14 @@
   "back_up": "Направи копие",
   "newest": "Последно копие",
   "total_size": "Общ размер",
-  "in_time": "след {time}"
+  "in_time": "след {time}",
+  "guests_n": "Работещи VM и LXC: {n}",
+  "running_of": "{running} / {total} работят",
+  "cert_in": "сертификатът изтича след {n} дни",
+  "review": "Преглед",
+  "needs_attention": "Изисква внимание",
+  "resources": "Ресурси",
+  "last_24h": "последни 24 ч",
+  "more_n": "+ още {n}",
+  "backups_power": "Копия, захранване и сертификати"
 }

@@ -150,5 +150,14 @@
   "back_up": "Säkerhetskopiera",
   "newest": "Senaste säkerhetskopia",
   "total_size": "Total storlek",
-  "in_time": "om {time}"
+  "in_time": "om {time}",
+  "guests_n": "Körande VM och LXC: {n}",
+  "running_of": "{running} / {total} körs",
+  "cert_in": "certifikatet går ut om {n} dagar",
+  "review": "Visa",
+  "needs_attention": "Behöver åtgärd",
+  "resources": "Resurser",
+  "last_24h": "senaste 24 h",
+  "more_n": "+ {n} till",
+  "backups_power": "Säkerhetskopior, ström och certifikat"
 }

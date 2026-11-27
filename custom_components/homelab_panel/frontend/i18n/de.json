@@ -150,5 +150,14 @@
   "back_up": "Sichern",
   "newest": "Neueste Sicherung",
   "total_size": "Gesamtgröße",
-  "in_time": "in {time}"
+  "in_time": "in {time}",
+  "guests_n": "Laufende VMs und LXC: {n}",
+  "running_of": "{running} / {total} laufen",
+  "cert_in": "Zertifikat läuft in {n} Tagen ab",
+  "review": "Ansehen",
+  "needs_attention": "Handlungsbedarf",
+  "resources": "Ressourcen",
+  "last_24h": "letzte 24 h",
+  "more_n": "+ {n} weitere",
+  "backups_power": "Sicherungen, Strom und Zertifikate"
 }

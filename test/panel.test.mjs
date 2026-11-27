@@ -261,3 +261,16 @@ test("backups: every source with its state, a backup started its own way", async
   await new Promise((r) => setTimeout(r));
   assert.deepEqual(calls, [["button", "press", { entity_id: "button.photos_to_cloud_create_backup" }]]);
 });
+
+test("the overview: the plan, what needs attention with its action, resources, services, backups", () => {
+  const html = panel("/overview", { entities, devices }).html();
+  assert.match(html, /class="card plan"/);
+  assert.match(html, /data-tab="storage"/);
+  assert.match(html, /71 % · 10 TB \/ 14 TB/, "the NAS figures come from its volumes");
+  assert.match(html, /Needs attention/);
+  assert.match(html, /data-act="toggle"[^>]*data-entity="switch\.paperless"/);
+  assert.match(html, /data-bkrun=/);
+  assert.match(html, /data-review/);
+  assert.match(html, /Backups, power and certificates/);
+  assert.doesNotMatch(html, /undefined|NaN|\[object Object\]/);
+});
