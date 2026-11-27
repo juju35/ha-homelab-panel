@@ -256,10 +256,13 @@ def _entry_id(dev: dr.DeviceEntry) -> str:
 
 
 def _part_kind(device: dr.DeviceEntry) -> str | None:
-    """A disk or a volume of a NAS, by its name or model; None for another part (fan, network interface…)."""
+    """A disk, volume or pool of a NAS, by its name or model; None for another part (fan, network interface…)."""
     text = " ".join(str(x) for x in (device.model, device.name) if x).lower()
-    if re.search(r"volume|pool|storage|raid", text):
+    # A pool (UGREEN, QNAP) holds the volumes: its "used" size is what it gave them, so it is no usage of its own
+    if re.search(r"volume", text):
         return "volume"
+    if re.search(r"pool|storage|raid", text):
+        return "pool"
     if re.search(r"disk|drive|hdd|ssd|nvme|m\.2|sata", text):
         return "disk"
     return None
@@ -367,7 +370,8 @@ def async_inventory(hass: HomeAssistant, sources: Iterable[str] | None = None) -
             elif source == "docker":
                 kind = _docker_kind(device, ents, platform)
             elif source == "nas":
-                kind, parent = nas_kinds.get(dev_id, ("nas", None))
+                # An entity without a device (the integration's settings: a Lovelace device select…) is no NAS
+                kind, parent = nas_kinds.get(dev_id, (None, None))
             else:
                 kind = KIND_OF_SOURCE[source]
             if kind is None:

@@ -119,15 +119,18 @@ export const homelabModel = (inv, hass, settings = {}, now = Date.now()) => {
         used: homelabBytesOf(hass, v.entities.used),
         total: homelabBytesOf(hass, v.entities.total),
       }));
-    const used = homelabBytesOf(hass, n.entities.volume_used);
-    const total = homelabBytesOf(hass, n.entities.volume_total);
+    // The volumes' own sizes first (a UGREEN or QNAP device's sizes can be its pools', always full), then the NAS's
+    const sized = volumes.filter((v) => v.used !== null && v.total);
+    const sum = (k) => sized.reduce((a, v) => a + v[k], 0);
+    const used = sized.length ? sum("used") : homelabBytesOf(hass, n.entities.volume_used);
+    const total = sized.length ? sum("total") : homelabBytesOf(hass, n.entities.volume_total);
     return {
       ...n,
       brand: HOMELAB_NAS_PLATFORM_BRAND[n.platform] || null,
       up: homelabAvailable(hass, n),
       healthy: status === null || HOMELAB_HEALTHY.test(status),
       status,
-      pct: homelabPctOf(hass, n.entities.volume, n.entities.volume_used, n.entities.volume_total) ?? volumes[0]?.pct ?? null,
+      pct: sized.length ? (used / total) * 100 : (homelabPctOf(hass, n.entities.volume, n.entities.volume_used, n.entities.volume_total) ?? volumes[0]?.pct ?? null),
       used: used ?? volumes[0]?.used ?? null,
       total: total ?? volumes[0]?.total ?? null,
       temp: homelabNum(hass, n.entities.temperature),
