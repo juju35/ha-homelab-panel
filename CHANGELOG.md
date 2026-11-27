@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.3 - 2026-11-27
+
+### Fixes
+- A device that belongs to another integration (a Marketplace repository named after the NAS, for instance) is no longer shown as a NAS, even when entities of the NAS integration sit on it.
+
 ## 1.0.2 - 2026-11-27
 
 ### Fixes

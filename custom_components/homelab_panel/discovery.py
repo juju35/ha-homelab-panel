@@ -266,7 +266,10 @@ def _part_kind(device: dr.DeviceEntry) -> str | None:
 
 
 def _nas_kinds(
-    by_device: dict[str, list[er.RegistryEntry]], devices: dict[str, dr.DeviceEntry]
+    by_device: dict[str, list[er.RegistryEntry]],
+    devices: dict[str, dr.DeviceEntry],
+    domains: dict[str, str | None],
+    platforms: Iterable[str],
 ) -> dict[str, tuple[str | None, str | None]]:
     """Kind and parent of each NAS device. Per config entry, the NAS is the root device with a NAS model (else the one
     with the most entities); its other devices, children or not (UGREEN and Synology split some parts into devices of
@@ -275,7 +278,12 @@ def _nas_kinds(
     for dev in devices.values():
         by_entry.setdefault(_entry_id(dev), []).append(dev)
     out: dict[str, tuple[str | None, str | None]] = {}
-    for devs in by_entry.values():
+    for entry_id, devs in by_entry.items():
+        # A device of another integration (a Marketplace repository named after the NAS…) is no NAS nor part of one
+        if domains.get(entry_id) not in platforms:
+            for d in devs:
+                out[d.id] = (None, None)
+            continue
         roots = [d for d in devs if not d.via_device_id or d.via_device_id not in devices]
         nas = [d for d in roots if NAS_MODEL_RE.search(str(d.model or ""))]
         if not nas:
@@ -340,7 +348,13 @@ def async_inventory(hass: HomeAssistant, sources: Iterable[str] | None = None) -
             ):
                 devices[parent.id] = parent
                 by_device.setdefault(parent.id, [])
-        nas_kinds = _nas_kinds(by_device, devices) if source == "nas" else {}
+        nas_kinds = {}
+        if source == "nas":
+            domains = {
+                eid: (e.domain if (e := hass.config_entries.async_get_entry(eid)) else None)
+                for eid in {_entry_id(d) for d in devices.values()}
+            }
+            nas_kinds = _nas_kinds(by_device, devices, domains, platforms)
         for dev_id, ents in sorted(by_device.items(), key=lambda kv: kv[0]):
             device = devices.get(dev_id)
             platform = ents[0].platform if ents else ""
