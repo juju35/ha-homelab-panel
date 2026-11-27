@@ -235,6 +235,13 @@ NAS_MODEL_RE = re.compile(
 )
 
 
+def _entry_id(dev: dr.DeviceEntry) -> str:
+    """The device's config entry: config_entry_id on recent Home Assistant, else its first config entry."""
+    if hasattr(type(dev), "config_entry_id"):
+        return str(dev.config_entry_id or "")
+    return next(iter(dev.config_entries), "")
+
+
 def _part_kind(device: dr.DeviceEntry) -> str | None:
     """A disk or a volume of a NAS, by its name or model; None for another part (fan, network interface…)."""
     text = " ".join(str(x) for x in (device.model, device.name) if x).lower()
@@ -253,12 +260,7 @@ def _nas_kinds(
     their own), are its disks and volumes, and any other part is left out."""
     by_entry: dict[str, list[dr.DeviceEntry]] = {}
     for dev in devices.values():
-        entry = (
-            dev.primary_config_entry
-            if getattr(dev, "primary_config_entry", None)
-            else next(iter(dev.config_entries), "")
-        )
-        by_entry.setdefault(entry, []).append(dev)
+        by_entry.setdefault(_entry_id(dev), []).append(dev)
     out: dict[str, tuple[str | None, str | None]] = {}
     for devs in by_entry.values():
         roots = [d for d in devs if not d.via_device_id or d.via_device_id not in devices]
@@ -304,6 +306,9 @@ def async_inventory(hass: HomeAssistant, sources: Iterable[str] | None = None) -
         for entry in ent_reg.entities.values():
             if entry.platform not in platforms or entry.disabled_by is not None:
                 continue
+            # Left over by a removed or replaced integration entry: not a live item
+            if entry.config_entry_id and hass.config_entries.async_get_entry(entry.config_entry_id) is None:
+                continue
             info.entities += 1
             # An entity without a device (Monitor Docker, Certificate Expiry…) is its own item
             by_device.setdefault(entry.device_id or f"entity:{entry.entity_id}", []).append(entry)
@@ -322,9 +327,9 @@ def async_inventory(hass: HomeAssistant, sources: Iterable[str] | None = None) -
         nas_kinds = _nas_kinds(by_device, devices) if source == "nas" else {}
         for dev_id, ents in sorted(by_device.items(), key=lambda kv: kv[0]):
             device = devices.get(dev_id)
-            platform = ents[0].platform if ents else (next(iter(device.config_entries), "") if device else "")
-            if device is not None and ents == [] and device.config_entries:
-                entry = hass.config_entries.async_get_entry(next(iter(device.config_entries)))
+            platform = ents[0].platform if ents else ""
+            if device is not None and not ents and (entry_id := _entry_id(device)):
+                entry = hass.config_entries.async_get_entry(entry_id)
                 platform = entry.domain if entry else platform
             parent = device.via_device_id if device and device.via_device_id in devices else None
             if source == "proxmox":
