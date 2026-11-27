@@ -201,3 +201,19 @@ async def test_devices_without_nas_readings_are_not_nas(hass: HomeAssistant):
     assert found[0].entities["volume_used"] == vol_used
     assert found[0].entities["volume_total"] == vol_total
     assert len(inv.items) == 1
+
+
+async def test_devices_of_another_integration_are_not_nas(hass: HomeAssistant):
+    """UGREEN entities on devices that belong to another integration (Marketplace repositories named after the NAS)
+    add no NAS, whatever they read."""
+    entry = _entry(hass, "ugreen")
+    nas = _device(hass, entry, "nas", "UGREEN NAS", "UGREEN DXP480T Plus")
+    _entity(hass, entry, "sensor", "ugreen_nas_cpu_usage", nas, "cpu_usage")
+    store = _entry(hass, "hacs")
+    for key in ("device_select", "entity_filter"):
+        repo = _device(hass, store, key, f"UGREEN NAS Lovelace {key}", "plugin")
+        _entity(hass, entry, "sensor", f"{key}_cpu_usage", repo, "cpu_usage")
+        _entity(hass, entry, "sensor", f"{key}_temperature", repo, "temperature")
+
+    inv = async_inventory(hass, ["nas"])
+    assert [i.name for i in inv.items] == ["UGREEN NAS"]
