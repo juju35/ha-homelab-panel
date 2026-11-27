@@ -19,14 +19,11 @@ def _entry(hass: HomeAssistant, domain: str) -> MockConfigEntry:
     return entry
 
 
-def _device(hass, entry, key, name, model, via=None) -> dr.DeviceEntry:
-    registry = dr.async_get(hass)
+def _device(hass, entry, key, name, model, via: dr.DeviceEntry | None = None) -> dr.DeviceEntry:
     parent = {}
-    if via and VIA_ID:
-        parent = {"via_device_id": registry.async_get_device(identifiers={(entry.domain, via)}).id}
-    elif via:
-        parent = {"via_device": (entry.domain, via)}
-    return registry.async_get_or_create(
+    if via is not None:
+        parent = {"via_device_id": via.id} if VIA_ID else {"via_device": next(iter(via.identifiers))}
+    return dr.async_get(hass).async_get_or_create(
         config_entry_id=entry.entry_id, identifiers={(entry.domain, key)}, name=name, model=model, **parent
     )
 
@@ -61,8 +58,8 @@ async def test_empty(hass: HomeAssistant):
 async def test_proxmox_host_and_guests(hass: HomeAssistant):
     entry = _entry(hass, "proxmoxve")
     node = _device(hass, entry, "node_pve", "pve-1", "Node")
-    vm = _device(hass, entry, "qemu_101", "web", "QEMU", via="node_pve")
-    lxc = _device(hass, entry, "lxc_201", "dns", "LXC", via="node_pve")
+    vm = _device(hass, entry, "qemu_101", "web", "QEMU", via=node)
+    lxc = _device(hass, entry, "lxc_201", "dns", "LXC", via=node)
     cpu = _entity(hass, entry, "sensor", "pve_cpu_usage", node, "cpu_usage")
     status = _entity(hass, entry, "binary_sensor", "pve_status", node, "status")
     start = _entity(hass, entry, "button", "web_start", vm, "start")
@@ -89,8 +86,8 @@ async def test_proxmox_host_and_guests(hass: HomeAssistant):
 async def test_nas_with_disks_and_volumes(hass: HomeAssistant):
     entry = _entry(hass, "synology_dsm")
     nas = _device(hass, entry, "nas", "nas-main", "DS923+")
-    disk = _device(hass, entry, "nas_disk1", "Drive 1", "WD Red", via="nas")
-    volume = _device(hass, entry, "nas_volume1", "Volume 1", "Volume", via="nas")
+    disk = _device(hass, entry, "nas_disk1", "Drive 1", "WD Red", via=nas)
+    volume = _device(hass, entry, "nas_volume1", "Volume 1", "Volume", via=nas)
     temp = _entity(hass, entry, "sensor", "nas_temperature", nas, "temperature")
     disk_temp = _entity(hass, entry, "sensor", "disk1_disk_temp", disk, "disk_temp")
     disk_status = _entity(hass, entry, "sensor", "disk1_disk_smart_status", disk, "disk_smart_status")
@@ -110,7 +107,7 @@ async def test_nas_with_disks_and_volumes(hass: HomeAssistant):
 async def test_docker(hass: HomeAssistant):
     entry = _entry(hass, "portainer")
     host = _device(hass, entry, "env1", "local", "Environment")
-    box = _device(hass, entry, "ctr_nginx", "nginx", "Container", via="env1")
+    box = _device(hass, entry, "ctr_nginx", "nginx", "Container", via=host)
     running = _entity(hass, entry, "sensor", "env1_containers_running", host, "containers_running")
     switch = _entity(hass, entry, "switch", "nginx_container", box, "container")
     items = _by_name(async_inventory(hass, ["docker"]))
