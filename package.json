@@ -1,0 +1,20 @@
+{
+  "name": "ha-homelab-panel",
+  "version": "1.0.0",
+  "description": "Home Assistant sidebar panel for the homelab: Proxmox VE hosts, Docker containers, NAS, UPS, services, backups and certificates.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-frontend.mjs",
+    "check": "node scripts/build-frontend.mjs && node --check custom_components/homelab_panel/frontend/homelab-panel.js",
+    "prescreenshots": "node scripts/build-frontend.mjs",
+    "screenshots": "node scripts/screenshots.mjs",
+    "pretest": "node scripts/build-frontend.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "acorn": "^8.19.0",
+    "playwright": "^1.65.1"
+  }
+}
