@@ -370,7 +370,7 @@ def async_inventory(hass: HomeAssistant, sources: Iterable[str] | None = None) -
             elif source == "docker":
                 kind = _docker_kind(device, ents, platform)
             elif source == "nas":
-                # An entity without a device (the integration's own settings, such as a Lovelace device select) is no NAS
+                # An entity without a device (the integration's settings: a Lovelace device select…) is no NAS
                 kind, parent = nas_kinds.get(dev_id, (None, None))
             else:
                 kind = KIND_OF_SOURCE[source]
