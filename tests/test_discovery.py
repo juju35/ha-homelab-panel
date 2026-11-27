@@ -174,7 +174,7 @@ async def test_ugreen_parts_on_devices_of_their_own(hass: HomeAssistant):
     inv = async_inventory(hass, ["nas"])
     items = _by_name(inv)
     assert [i.name for i in inv.items if i.kind == "nas"] == ["ugreen-nas"]
-    assert items["Storage pool 1"].kind == "volume"
+    assert items["Storage pool 1"].kind == "pool"
     assert items["Storage pool 1"].parent == nas.id
     assert items["M.2 drive 1"].kind == "disk"
     assert items["M.2 drive 1"].parent == nas.id
@@ -217,3 +217,23 @@ async def test_devices_of_another_integration_are_not_nas(hass: HomeAssistant):
 
     inv = async_inventory(hass, ["nas"])
     assert [i.name for i in inv.items] == ["UGREEN NAS"]
+
+
+async def test_entities_without_device_are_not_nas(hass: HomeAssistant):
+    """The NAS integration's own settings entities, without a device (its Lovelace device select, entity filter),
+    are no NAS; the volume devices are the NAS's volumes, its pools apart."""
+    entry = _entry(hass, "ugreen")
+    nas = _device(hass, entry, "nas", "UGREEN NAS", "UGREEN DXP480T Plus")
+    _entity(hass, entry, "sensor", "ugreen_nas_cpu_usage", nas, "cpu_usage")
+    pool = _device(hass, entry, "pool1", "UGREEN NAS (Pool 1)", "UGREEN RAID1 pool", via=nas)
+    vol = _device(hass, entry, "vol1", "UGREEN NAS (Pool 1 | Volume 1)", "UGREEN btrfs volume", via=nas)
+    _entity(hass, entry, "sensor", "pool_1_used_size", pool)
+    _entity(hass, entry, "sensor", "pool_1_volume_1_used_size", vol)
+    _entity(hass, entry, "select", "ugreen_nas_lovelace_device_select")
+    _entity(hass, entry, "text", "ugreen_nas_lovelace_entity_filter")
+
+    inv = async_inventory(hass, ["nas"])
+    kinds = {i.name: i.kind for i in inv.items}
+    assert [n for n, k in kinds.items() if k == "nas"] == ["UGREEN NAS"]
+    assert kinds["UGREEN NAS (Pool 1 | Volume 1)"] == "volume"
+    assert kinds["UGREEN NAS (Pool 1)"] == "pool"

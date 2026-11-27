@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.4 - 2026-11-27
+
+### Fixes
+- Entities of a NAS integration without a device (its own settings, such as UGREEN's Lovelace device select and entity filter) are no longer shown as NAS.
+- The NAS usage adds up its volumes' used and total sizes; a storage pool is no longer read as a volume (its used size, what it gave its volumes, was always full).
+
 ## 1.0.3 - 2026-11-27
 
 ### Fixes
