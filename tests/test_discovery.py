@@ -1,11 +1,16 @@
 """The inventory read from the device and entity registries."""
 
+import inspect
+
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.homelab_panel.discovery import async_inventory
+
+# Recent Home Assistant takes the parent's id (via_device_id), older releases its identifier (via_device)
+VIA_ID = "via_device_id" in inspect.signature(dr.DeviceRegistry.async_get_or_create).parameters
 
 
 def _entry(hass: HomeAssistant, domain: str) -> MockConfigEntry:
@@ -15,12 +20,14 @@ def _entry(hass: HomeAssistant, domain: str) -> MockConfigEntry:
 
 
 def _device(hass, entry, key, name, model, via=None) -> dr.DeviceEntry:
-    return dr.async_get(hass).async_get_or_create(
-        config_entry_id=entry.entry_id,
-        identifiers={(entry.domain, key)},
-        name=name,
-        model=model,
-        via_device=(entry.domain, via) if via else None,
+    registry = dr.async_get(hass)
+    parent = {}
+    if via and VIA_ID:
+        parent = {"via_device_id": registry.async_get_device(identifiers={(entry.domain, via)}).id}
+    elif via:
+        parent = {"via_device": (entry.domain, via)}
+    return registry.async_get_or_create(
+        config_entry_id=entry.entry_id, identifiers={(entry.domain, key)}, name=name, model=model, **parent
     )
 
 
