@@ -104,7 +104,6 @@
   "filter_all": "Все: {n}",
   "filter_stopped": "Остановлены: {n}",
   "filter_updates": "Обновления: {n}",
-  "docker_hosts": "Хосты Docker",
   "sources": "Источники",
   "src_loaded": "подключено",
   "src_not_loaded": "не загружено",

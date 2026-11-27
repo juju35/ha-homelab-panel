@@ -104,7 +104,6 @@
   "filter_all": "Svi: {n}",
   "filter_stopped": "Zaustavljeni: {n}",
   "filter_updates": "Ažuriranja: {n}",
-  "docker_hosts": "Docker hostovi",
   "sources": "Izvori",
   "src_loaded": "povezano",
   "src_not_loaded": "nije učitano",

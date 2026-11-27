@@ -98,11 +98,21 @@ export class HomelabPanel extends HTMLElement {
     const lang = this._lang();
     const ctx = { t, lang, strings: this._strings, filter: this._filter };
     const m = homelabModel(this._inv, this._hass, this._settings);
+    // A tab with nothing to show is hidden once the inventory is known (overview and settings always stay)
+    const has = {
+      hosts: m.hosts.length || m.guests.length,
+      containers: m.containers.length,
+      storage: m.nas.length,
+      services: m.services.length || m.proxies.length || m.certificates.length,
+      backups: m.backups.length || m.hosts.some((h) => h.entities.last_backup),
+    };
+    const shownTabs = HOMELAB_TABS.filter((k) => !this._inv?.configured || !(k in has) || has[k]);
+    const tab = shownTabs.includes(this._tab) ? this._tab : "overview";
     let body;
     if (this._error === "denied") body = `<div class="card empty">${homelabEsc(t("denied"))}</div>`;
     else if (this._error) body = `<div class="card empty">${homelabEsc(t("error", { error: this._error }))}<br><br><button class="btn accent" data-retry>${t("retry")}</button></div>`;
     else if (!this._inv) body = `<div class="card empty">${t("loading")}</div>`;
-    else if (!this._inv.configured && this._tab !== "settings") body = `<div class="card empty">${homelabEsc(t("nothing"))}</div>`;
+    else if (!this._inv.configured && tab !== "settings") body = `<div class="card empty">${homelabEsc(t("nothing"))}</div>`;
     else
       body = {
         overview: () => homelabOverview(m, ctx),
@@ -112,12 +122,12 @@ export class HomelabPanel extends HTMLElement {
         services: () => homelabServices(m, ctx),
         backups: () => homelabBackups(m, ctx),
         settings: () => homelabSettings(this._inv, this._settings || {}, ctx),
-      }[this._tab]();
+      }[tab]();
     const alerts = m.alerts.length;
     const pill = this._inv ? homelabPill(alerts ? t("pill_alerts", { n: alerts }) : t("pill_ok"), alerts ? (m.alerts.some((a) => ["host", "service", "ups"].includes(a.kind)) ? "crit" : "warn") : "ok") : "";
-    const names = [m.hosts.length && "Proxmox", (m.containers.length || m.dockerHosts.length) && "Docker", m.nas.length && "NAS", m.ups.length && "UPS", m.services.length && "Uptime Kuma"].filter(Boolean).join(" · ");
+    const names = [m.hosts.length && "Proxmox", m.containers.length && "Docker", m.nas.length && "NAS", m.ups.length && "UPS", m.services.length && "Uptime Kuma"].filter(Boolean).join(" · ");
     const scene = homelabScene({ width: Math.max(640, this.clientWidth || 1216), nas: m.nas.map((n) => ({ model: n.model, brand: n.brand })), ups: m.ups.length > 0 || !this._inv?.configured, night });
-    const tabs = HOMELAB_TABS.map((k) => `<button data-tab="${k}" class="${k === this._tab ? "on" : ""}" ${k === this._tab ? 'aria-current="page"' : ""}>${homelabEsc(t(`tab_${k}`))}</button>`).join("");
+    const tabs = shownTabs.map((k) => `<button data-tab="${k}" class="${k === tab ? "on" : ""}" ${k === tab ? 'aria-current="page"' : ""}>${homelabEsc(t(`tab_${k}`))}</button>`).join("");
     this.shadowRoot.innerHTML = `<style>${HOMELAB_STYLE}</style><div class="wrap${night ? " night" : ""}"><header class="banner">${scene}<div class="htext"><div class="hicon">${HOMELAB_ICON}</div><div class="htitle"><div class="n">${t("title")}</div><div class="s">${homelabEsc(names)}</div></div>${pill}</div><button class="hbtn" data-refresh aria-label="${homelabEsc(t("refresh"))}" title="${homelabEsc(t("refresh"))}">${HOMELAB_REFRESH}</button></header><nav class="tabs" aria-label="${homelabEsc(t("title"))}">${tabs}</nav><main>${body}</main>${this._confirm ? this._confirmHtml() : ""}</div>`;
   }
 

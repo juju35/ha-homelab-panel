@@ -104,7 +104,6 @@
   "filter_all": "Vsi: {n}",
   "filter_stopped": "Ustavljeni: {n}",
   "filter_updates": "Posodobitve: {n}",
-  "docker_hosts": "Gostitelji Docker",
   "sources": "Viri",
   "src_loaded": "povezano",
   "src_not_loaded": "ni naloženo",

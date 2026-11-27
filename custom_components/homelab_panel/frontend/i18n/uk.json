@@ -104,7 +104,6 @@
   "filter_all": "Усі: {n}",
   "filter_stopped": "Зупинені: {n}",
   "filter_updates": "Оновлення: {n}",
-  "docker_hosts": "Хости Docker",
   "sources": "Джерела",
   "src_loaded": "підключено",
   "src_not_loaded": "не завантажено",

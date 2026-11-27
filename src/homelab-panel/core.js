@@ -141,7 +141,6 @@ export const HOMELAB_EN = {
   filter_all: "All: {n}",
   filter_stopped: "Stopped: {n}",
   filter_updates: "Updates: {n}",
-  docker_hosts: "Docker hosts",
   sources: "Sources",
   src_loaded: "connected",
   src_not_loaded: "not loaded",

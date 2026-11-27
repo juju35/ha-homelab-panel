@@ -119,6 +119,31 @@ test("every tab renders, the active one marked", () => {
   assert.match(panel("/unknown").html(), /data-tab="overview" class="on"/);
 });
 
+test("a tab with nothing to show is hidden, its address falls back to the overview", () => {
+  const Panel = lib.HomelabPanel;
+  const p = new Panel();
+  p._hass = { states, language: "en", themes: { darkMode: false }, callService: async () => {}, callWS: async () => ({}) };
+  p._inv = clone(inventory);
+  p._inv.items = p._inv.items.filter((i) => !["host", "guest_vm", "guest_lxc"].includes(i.kind));
+  p._settings = { ...inventory.settings };
+  p._route = { path: "/hosts" };
+  p._render(true);
+  const html = p.shadowRoot.innerHTML;
+  assert.doesNotMatch(html, /data-tab="hosts"/);
+  assert.match(html, /data-tab="overview" class="on"/);
+  assert.match(html, /data-tab="settings"/);
+});
+
+test("a service listed twice shows once, the containers tab has no Docker hosts list", () => {
+  const inv = clone(inventory);
+  const svc = inv.items.find((i) => i.kind === "service");
+  inv.items.push({ ...clone(svc), id: `${svc.id}-again`, entities: {} });
+  const m = lib.homelabModel(inv, { states }, inv.settings, NOW);
+  assert.equal(m.services.filter((s) => s.name === svc.name).length, 1);
+  assert.ok(m.services.find((s) => s.name === svc.name).status, "the copy with a status is kept");
+  assert.doesNotMatch(panel("/containers").html(), /Docker hosts/);
+});
+
 test("names are escaped in the render", () => {
   const { p, html } = panel("/hosts");
   p._inv.items.find((i) => i.kind === "host").name = "<b>evil</b>";

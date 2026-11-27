@@ -104,7 +104,6 @@
   "filter_all": "Alle: {n}",
   "filter_stopped": "Stoppet: {n}",
   "filter_updates": "Opdateringer: {n}",
-  "docker_hosts": "Docker-værter",
   "sources": "Kilder",
   "src_loaded": "forbundet",
   "src_not_loaded": "ikke indlæst",

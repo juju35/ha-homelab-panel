@@ -104,7 +104,6 @@
   "filter_all": "Alla: {n}",
   "filter_stopped": "Stoppade: {n}",
   "filter_updates": "Uppdateringar: {n}",
-  "docker_hosts": "Docker-värdar",
   "sources": "Källor",
   "src_loaded": "ansluten",
   "src_not_loaded": "inte laddad",

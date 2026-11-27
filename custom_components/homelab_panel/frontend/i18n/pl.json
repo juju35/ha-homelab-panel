@@ -104,7 +104,6 @@
   "filter_all": "Wszystkie: {n}",
   "filter_stopped": "Zatrzymane: {n}",
   "filter_updates": "Aktualizacje: {n}",
-  "docker_hosts": "Hosty Docker",
   "sources": "Źródła",
   "src_loaded": "połączono",
   "src_not_loaded": "nie załadowano",

@@ -104,7 +104,6 @@
   "filter_all": "Tutti: {n}",
   "filter_stopped": "Fermi: {n}",
   "filter_updates": "Aggiornamenti: {n}",
-  "docker_hosts": "Host Docker",
   "sources": "Fonti",
   "src_loaded": "connesso",
   "src_not_loaded": "non caricato",
