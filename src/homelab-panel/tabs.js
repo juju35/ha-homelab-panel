@@ -200,7 +200,7 @@ export const homelabHosts = (m, c) => {
 // ── Containers ─────────────────────────────────────────────────────────────────────────────────────────────────────
 export const homelabContainers = (m, c) => {
   const { t, lang } = c;
-  if (!m.containers.length && !m.dockerHosts.length) return empty(t("empty_containers"));
+  if (!m.containers.length) return empty(t("empty_containers"));
   const f = c.filter || "all";
   const stopped = m.containers.filter((x) => !x.up);
   const updates = m.containers.filter((x) => x.update);
@@ -214,11 +214,6 @@ export const homelabContainers = (m, c) => {
   ]
     .map(([k, label]) => `<button data-filter="${k}" class="${f === k ? "on" : ""}">${homelabEsc(label)}</button>`)
     .join("")}</div>`;
-  const hosts = m.dockerHosts.length
-    ? `<div class="card" style="margin-bottom:14px"><h3>${t("docker_hosts")}</h3><div class="rows">${m.dockerHosts
-        .map((d) => `<div class="row"><span class="grow"><b>${homelabEsc(d.name)}</b>${d.version ? ` · ${homelabEsc(d.version)}` : ""}</span><span class="end">${d.running !== null ? `${homelabFmt(d.running, lang)} ${t("st_running")}` : ""}${d.stopped ? ` · <span class="crit">${homelabFmt(d.stopped, lang)} ${t("st_stopped")}</span>` : ""}</span></div>`)
-        .join("")}</div></div>`
-    : "";
   const rows = list
     .map(
       (x) =>
@@ -228,7 +223,7 @@ export const homelabContainers = (m, c) => {
   const table = m.containers.length
     ? `<div class="card"><div class="scroll"><table><thead><tr><th>${t("k_containers")}</th><th>${t("col_state")}</th><th>${t("cpu")}</th><th>${t("ram")}</th><th>${t("col_image")}</th><th></th></tr></thead><tbody>${rows || `<tr><td colspan="6" class="muted">${t("all_fine")}</td></tr>`}</tbody></table></div></div>`
     : "";
-  return `${hosts}${m.containers.length ? filters : ""}${table}`;
+  return `${filters}${table}`;
 };
 
 // ── Storage ────────────────────────────────────────────────────────────────────────────────────────────────────────

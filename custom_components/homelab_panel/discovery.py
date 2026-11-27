@@ -201,8 +201,21 @@ def _proxmox_kind(device: dr.DeviceEntry) -> str:
     return "host"
 
 
-def _docker_kind(device: dr.DeviceEntry | None, entries: list[er.RegistryEntry]) -> str:
-    """An environment / endpoint / host device, else a container."""
+# Dockhand and Portainer type their devices by model: the environment (Dockhand) or endpoint (Portainer), its
+# containers, and other devices (stacks, schedules, groups…) that are neither and stay out of the panel.
+DOCKER_HOST_MODELS = ("environment", "endpoint")
+DOCKER_MODEL_PLATFORMS = ("dockhand", "portainer")
+
+
+def _docker_kind(device: dr.DeviceEntry | None, entries: list[er.RegistryEntry], platform: str) -> str | None:
+    """An environment / endpoint / host device, a container, or None for a device that is neither."""
+    model = str(device.model or "").strip().lower() if device else ""
+    if model in DOCKER_HOST_MODELS:
+        return "docker_host"
+    if model == "container":
+        return "container"
+    if platform in DOCKER_MODEL_PLATFORMS and model:
+        return None
     text = " ".join(str(x) for x in (device.model, device.name) if x).lower() if device else ""
     if re.search(r"environment|endpoint|host|engine|server", text):
         return "docker_host"
@@ -214,12 +227,53 @@ def _docker_kind(device: dr.DeviceEntry | None, entries: list[er.RegistryEntry])
     return "container"
 
 
-def _nas_kind(device: dr.DeviceEntry, devices: dict[str, dr.DeviceEntry]) -> str:
-    """The NAS itself, or one of its disks / volumes (a child device)."""
-    if not device.via_device_id or device.via_device_id not in devices:
-        return "nas"
+# NAS models of the supported brands: UGREEN DXP / DH, Synology DS / RS / DVA, QNAP TS / TVS / TBS, ASUSTOR AS and the
+# Flashstor / Lockerstor / Drivestor lines.
+NAS_MODEL_RE = re.compile(
+    r"\b(dxp|dh)\s?\d|\b(ds|rs|dva)\s?\d|\b(ts|tvs|tbs|tss)-?\s?\d|\bas\s?\d|flashstor|lockerstor|drivestor",
+    re.IGNORECASE,
+)
+
+
+def _entry_id(dev: dr.DeviceEntry) -> str:
+    """The device's config entry: config_entry_id on recent Home Assistant, else its first config entry."""
+    if hasattr(type(dev), "config_entry_id"):
+        return str(dev.config_entry_id or "")
+    return next(iter(dev.config_entries), "")
+
+
+def _part_kind(device: dr.DeviceEntry) -> str | None:
+    """A disk or a volume of a NAS, by its name or model; None for another part (fan, network interface…)."""
     text = " ".join(str(x) for x in (device.model, device.name) if x).lower()
-    return "volume" if re.search(r"volume|pool|storage", text) else "disk"
+    if re.search(r"volume|pool|storage|raid", text):
+        return "volume"
+    if re.search(r"disk|drive|hdd|ssd|nvme|m\.2|sata", text):
+        return "disk"
+    return None
+
+
+def _nas_kinds(
+    by_device: dict[str, list[er.RegistryEntry]], devices: dict[str, dr.DeviceEntry]
+) -> dict[str, tuple[str | None, str | None]]:
+    """Kind and parent of each NAS device. Per config entry, the NAS is the root device with a NAS model (else the one
+    with the most entities); its other devices, children or not (UGREEN and Synology split some parts into devices of
+    their own), are its disks and volumes, and any other part is left out."""
+    by_entry: dict[str, list[dr.DeviceEntry]] = {}
+    for dev in devices.values():
+        by_entry.setdefault(_entry_id(dev), []).append(dev)
+    out: dict[str, tuple[str | None, str | None]] = {}
+    for devs in by_entry.values():
+        roots = [d for d in devs if not d.via_device_id or d.via_device_id not in devices]
+        nas = [d for d in roots if NAS_MODEL_RE.search(str(d.model or ""))]
+        if not nas and roots:
+            nas = [max(roots, key=lambda d: len(by_device.get(d.id, [])))]
+        for d in devs:
+            if d in nas:
+                out[d.id] = ("nas", None)
+                continue
+            parent = d.via_device_id if d.via_device_id in devices else (nas[0].id if len(nas) == 1 else None)
+            out[d.id] = (_part_kind(d), parent)
+    return out
 
 
 KIND_OF_SOURCE = {
@@ -252,6 +306,9 @@ def async_inventory(hass: HomeAssistant, sources: Iterable[str] | None = None) -
         for entry in ent_reg.entities.values():
             if entry.platform not in platforms or entry.disabled_by is not None:
                 continue
+            # Left over by a removed or replaced integration entry: not a live item
+            if entry.config_entry_id and hass.config_entries.async_get_entry(entry.config_entry_id) is None:
+                continue
             info.entities += 1
             # An entity without a device (Monitor Docker, Certificate Expiry…) is its own item
             by_device.setdefault(entry.device_id or f"entity:{entry.entity_id}", []).append(entry)
@@ -267,20 +324,24 @@ def async_inventory(hass: HomeAssistant, sources: Iterable[str] | None = None) -
             ):
                 devices[parent.id] = parent
                 by_device.setdefault(parent.id, [])
+        nas_kinds = _nas_kinds(by_device, devices) if source == "nas" else {}
         for dev_id, ents in sorted(by_device.items(), key=lambda kv: kv[0]):
             device = devices.get(dev_id)
+            platform = ents[0].platform if ents else ""
+            if device is not None and not ents and (entry_id := _entry_id(device)):
+                entry = hass.config_entries.async_get_entry(entry_id)
+                platform = entry.domain if entry else platform
+            parent = device.via_device_id if device and device.via_device_id in devices else None
             if source == "proxmox":
                 kind = _proxmox_kind(device) if device else "host"
             elif source == "docker":
-                kind = _docker_kind(device, ents)
+                kind = _docker_kind(device, ents, platform)
             elif source == "nas":
-                kind = _nas_kind(device, devices) if device else "nas"
+                kind, parent = nas_kinds.get(dev_id, ("nas", None))
             else:
                 kind = KIND_OF_SOURCE[source]
-            platform = ents[0].platform if ents else (next(iter(device.config_entries), "") if device else "")
-            if device is not None and ents == [] and device.config_entries:
-                entry = hass.config_entries.async_get_entry(next(iter(device.config_entries)))
-                platform = entry.domain if entry else platform
+            if kind is None:
+                continue
             name = (
                 (device.name_by_user or device.name)
                 if device
@@ -295,7 +356,7 @@ def async_inventory(hass: HomeAssistant, sources: Iterable[str] | None = None) -
                     name=str(name or dev_id),
                     model=str(device.model or "") if device else "",
                     manufacturer=str(device.manufacturer or "") if device else "",
-                    parent=device.via_device_id if device and device.via_device_id in devices else None,
+                    parent=parent,
                     url=device.configuration_url if device else None,
                     entities=_roles(kind, ents),
                 )

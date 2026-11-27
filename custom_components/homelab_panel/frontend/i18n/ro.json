@@ -104,7 +104,6 @@
   "filter_all": "Toate: {n}",
   "filter_stopped": "Oprite: {n}",
   "filter_updates": "Actualizări: {n}",
-  "docker_hosts": "Gazde Docker",
   "sources": "Surse",
   "src_loaded": "conectat",
   "src_not_loaded": "neîncărcat",

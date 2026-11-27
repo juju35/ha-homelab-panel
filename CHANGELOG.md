@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.1 - 2026-11-27
+
+### Fixes
+- Containers: Dockhand and Portainer stacks, schedules and groups are no longer counted as containers; only their containers are (and shown by their own name).
+- NAS: a NAS whose pools and disks are devices of their own (UGREEN, Synology) now counts once, its parts listed under it.
+- Header: the drawings no longer cover the title and the alerts pill on a narrow screen; those that do not fit are left out.
+- Tabs: a tab with nothing to show (no Proxmox host, no container, no NAS…) is hidden.
+- Services: a monitor listed several times shows once; entities left over by a removed integration entry are ignored.
+- Containers: the Docker hosts list, which repeated the counts, is gone.
+
 ## 1.0.0 - 2026-11-27
 
 ### Features

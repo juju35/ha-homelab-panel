@@ -104,7 +104,6 @@
   "filter_all": "Všetky: {n}",
   "filter_stopped": "Zastavené: {n}",
   "filter_updates": "Aktualizácie: {n}",
-  "docker_hosts": "Hostitelia Docker",
   "sources": "Zdroje",
   "src_loaded": "pripojené",
   "src_not_loaded": "nenačítané",

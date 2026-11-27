@@ -26,7 +26,10 @@ export const homelabScene = ({ width = 1216, nas = [], ups = true, night = false
   const c = night ? HOMELAB_SKY.night : HOMELAB_SKY.day;
   const w = Math.max(640, Math.round(width));
   const right = w - 120; // the refresh button sits over the sky at the far right
+  // The title, its subtitle and the alerts pill sit over the sky at the left: no drawing goes there
+  const minX = Math.min(Math.round(w * 0.5), 480);
   let x = right;
+  const fits = (wd) => x - wd >= minX;
   const parts = [];
   // From the right: the plant, the UPS, the NAS (the last one first), the rack
   parts.push(
@@ -34,7 +37,7 @@ export const homelabScene = ({ width = 1216, nas = [], ups = true, night = false
   );
   x -= 52;
   const cables = [];
-  if (ups) {
+  if (ups && fits(64)) {
     parts.push(homelabPlace(HOMELAB_UPS_SVG, "sc-ups", x - 64, 28, 64, 52));
     cables.push(x - 70);
     x -= 76;
@@ -44,11 +47,12 @@ export const homelabScene = ({ width = 1216, nas = [], ups = true, night = false
     const ratio = homelabAspect(svg);
     const h = ratio > 2.2 ? 28 : 46;
     const wd = Math.round(h * ratio);
+    if (!fits(wd)) return;
     parts.push(homelabPlace(svg, `sc-nas${i}`, x - wd, 80 - h, wd, h));
     cables.push(x - wd - 8);
     x -= wd + 12;
   });
-  parts.push(homelabPlace(HOMELAB_PVE_SVG, "sc-pve", x - 99, 8, 99, 72));
+  if (fits(99)) parts.push(homelabPlace(HOMELAB_PVE_SVG, "sc-pve", x - 99, 8, 99, 72));
   const stars = night
     ? [0.12, 0.2, 0.31, 0.44, 0.52, 0.63, 0.71, 0.86]
         .map((f, i) => `<circle cx="${Math.round(w * f)}" cy="${10 + ((i * 17) % 34)}" r="${i % 3 ? 0.9 : 1.3}" fill="#FFFFFF" opacity=".8"/>`)

@@ -104,7 +104,6 @@
   "filter_all": "Összes: {n}",
   "filter_stopped": "Leállítva: {n}",
   "filter_updates": "Frissítések: {n}",
-  "docker_hosts": "Docker gazdagépek",
   "sources": "Források",
   "src_loaded": "csatlakoztatva",
   "src_not_loaded": "nincs betöltve",

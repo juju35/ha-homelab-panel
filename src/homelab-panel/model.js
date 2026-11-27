@@ -81,8 +81,12 @@ export const homelabModel = (inv, hass, settings = {}, now = Date.now()) => {
   }));
   const containers = of("container").map((c) => {
     const update = homelabState(hass, c.entities.update);
+    // Dockhand names its devices "<environment> – Containers – <name>": the container's own name is the last part
+    const parts = String(c.name).split(" – ");
     return {
       ...c,
+      name: parts[parts.length - 1],
+      env: parts.length > 1 ? parts[0] : null,
       up: homelabContainerUp(hass, c),
       cpu: homelabNum(hass, c.entities.cpu),
       ram: homelabBytesOf(hass, c.entities.ram),
@@ -150,14 +154,23 @@ export const homelabModel = (inv, hass, settings = {}, now = Date.now()) => {
       up: homelabAvailable(hass, u),
     };
   });
-  const services = of("service").map((s) => ({
-    ...s,
-    status: homelabServiceStatus(hass, s.entities.status),
-    response: homelabNum(hass, s.entities.response),
-    uptime: homelabNum(hass, s.entities.uptime),
-    certDays: homelabNum(hass, s.entities.cert_days),
-    address: homelabValue(hass, s.entities.url),
-  }));
+  // One monitor may show up several times (two Uptime Kuma entries, a device and loose entities…): one row per name,
+  // the one with a known status kept
+  const homelabServiceByName = new Map();
+  for (const it of of("service")) {
+    const s = {
+      ...it,
+      status: homelabServiceStatus(hass, it.entities.status),
+      response: homelabNum(hass, it.entities.response),
+      uptime: homelabNum(hass, it.entities.uptime),
+      certDays: homelabNum(hass, it.entities.cert_days),
+      address: homelabValue(hass, it.entities.url),
+    };
+    const key = String(s.name).trim().toLowerCase();
+    const seen = homelabServiceByName.get(key);
+    if (!seen || (!seen.status && s.status)) homelabServiceByName.set(key, s);
+  }
+  const services = [...homelabServiceByName.values()];
   const proxies = of("proxy").map((p) => ({
     ...p,
     hosts: homelabNum(hass, p.entities.hosts),

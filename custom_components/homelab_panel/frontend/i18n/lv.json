@@ -104,7 +104,6 @@
   "filter_all": "Visi: {n}",
   "filter_stopped": "Apturēti: {n}",
   "filter_updates": "Atjauninājumi: {n}",
-  "docker_hosts": "Docker resursdatori",
   "sources": "Avoti",
   "src_loaded": "savienots",
   "src_not_loaded": "nav ielādēts",

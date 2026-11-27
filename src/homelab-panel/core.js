@@ -12,7 +12,7 @@
  * English is built in; the other languages are loaded on demand from /homelab_panel/i18n/<lang>.json.
  */
 
-export const HOMELAB_PANEL_VERSION = "1.0.0";
+export const HOMELAB_PANEL_VERSION = "1.0.1";
 export const HOMELAB_TABS = ["overview", "hosts", "containers", "storage", "services", "backups", "settings"];
 export const HOMELAB_SOURCES = ["proxmox", "docker", "nas", "ups", "services", "proxy", "backups", "certificates"];
 // The integrations' own names, not translated
@@ -141,7 +141,6 @@ export const HOMELAB_EN = {
   filter_all: "All: {n}",
   filter_stopped: "Stopped: {n}",
   filter_updates: "Updates: {n}",
-  docker_hosts: "Docker hosts",
   sources: "Sources",
   src_loaded: "connected",
   src_not_loaded: "not loaded",

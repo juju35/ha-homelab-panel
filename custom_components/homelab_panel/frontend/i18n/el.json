@@ -104,7 +104,6 @@
   "filter_all": "Όλα: {n}",
   "filter_stopped": "Σταματημένα: {n}",
   "filter_updates": "Ενημερώσεις: {n}",
-  "docker_hosts": "Hosts Docker",
   "sources": "Πηγές",
   "src_loaded": "συνδεδεμένο",
   "src_not_loaded": "δεν φορτώθηκε",

@@ -142,3 +142,39 @@ async def test_ups_services_and_certificates(hass: HomeAssistant):
     assert disabled.entity_id not in str(inv.as_dict())
     # A source left out is not read
     assert "proxmox" not in inv.sources
+
+
+async def test_dockhand_keeps_only_environments_and_containers(hass: HomeAssistant):
+    entry = _entry(hass, "dockhand")
+    env = _device(hass, entry, "env_nas", "Nas", "Environment")
+    web = _device(hass, entry, "ctr_web", "Nas – Containers – web", "Container", via=env)
+    stack = _device(hass, entry, "stk_media", "Nas – Stacks – media", "Compose Stack", via=env)
+    job = _device(hass, entry, "sch_sync", "Nas – Schedules – Git sync: plex", "Schedule", via=env)
+    _entity(hass, entry, "sensor", "env_nas_containers", env, "containers")
+    _entity(hass, entry, "switch", "ctr_web_switch", web)
+    _entity(hass, entry, "switch", "stk_media_switch", stack)
+    _entity(hass, entry, "switch", "sch_sync_switch", job)
+
+    items = _by_name(async_inventory(hass, ["docker"]))
+    assert items["Nas"].kind == "docker_host"
+    assert items["Nas – Containers – web"].kind == "container"
+    # Stacks and schedules are not containers: left out
+    assert set(items) == {"Nas", "Nas – Containers – web"}
+
+
+async def test_ugreen_parts_on_devices_of_their_own(hass: HomeAssistant):
+    entry = _entry(hass, "ugreen")
+    nas = _device(hass, entry, "nas", "ugreen-nas", "DXP480T Plus")
+    pool = _device(hass, entry, "nas_pool1", "Storage pool 1", "Storage pool")
+    disk = _device(hass, entry, "nas_disk1", "M.2 drive 1", "Samsung SSD 990 EVO")
+    _entity(hass, entry, "sensor", "nas_cpu_usage", nas, "cpu_usage")
+    _entity(hass, entry, "sensor", "pool1_usage", pool, "volume_usage")
+    _entity(hass, entry, "sensor", "disk1_temperature", disk, "temperature")
+
+    inv = async_inventory(hass, ["nas"])
+    items = _by_name(inv)
+    assert [i.name for i in inv.items if i.kind == "nas"] == ["ugreen-nas"]
+    assert items["Storage pool 1"].kind == "volume"
+    assert items["Storage pool 1"].parent == nas.id
+    assert items["M.2 drive 1"].kind == "disk"
+    assert items["M.2 drive 1"].parent == nas.id
