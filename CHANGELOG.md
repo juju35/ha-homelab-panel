@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0 - 2026-11-27
+
+### Features
+- **Storage** at the level of ha-nas-card: per NAS its status, OS version and update, uptime and CPU model, restart and shutdown buttons (confirmed first), CPU, memory, temperatures and network rates with their last 24 hours, the volumes with their RAID level, file system and state, the disks with their model, temperature, state, size and power-on hours, and the fans (UGREEN, Synology DSM, QNAP).
+- **Containers** at the level of ha-docker-card: per Dockhand environment or Portainer endpoint its CPU and memory with their last 24 hours, containers running, Docker version and platform, the stacks, images, volumes, networks and updates counters, the stacks (state, Git, sync error, update, start / stop) and the containers (state, health, status, image, CPU, memory) with a search field, a sort by name, CPU or memory, a « needing attention » filter and their image update, restart and start / stop buttons, confirmed first.
+
 ## 1.0.4 - 2026-11-27
 
 ### Fixes

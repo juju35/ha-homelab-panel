@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { test } from "node:test";
-import { inventory, NOW, states } from "../scripts/mock-states.mjs";
+import { devices, entities, inventory, NOW, states } from "../scripts/mock-states.mjs";
 import { lib } from "./load.mjs";
 
 const i18n = new URL("../custom_components/homelab_panel/frontend/i18n/", import.meta.url);
@@ -187,4 +187,61 @@ test("nothing found: the panel says what to add, except in Settings", () => {
 test("the version is the package's", () => {
   const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
   assert.equal(lib.HOMELAB_PANEL_VERSION, pkg.version);
+});
+
+test("NAS detail: UGREEN's entity ids and Synology DSM's translation keys", () => {
+  const hass = { states, entities, devices };
+  const items = inventory.items;
+  const ug = lib.homelabNasDetail(hass, items.find((i) => i.id === "dev_nas1"), items);
+  assert.equal(ug.scalars.cpu_usage, "sensor.nas_main_cpu_usage");
+  assert.equal(ug.scalars.reboot, "button.nas_main_power_action_reboot");
+  assert.equal(ug.pools.length, 1);
+  assert.equal(ug.pools[0].level, "sensor.nas_main_pool_1_level");
+  assert.equal(ug.pools[0].volumes[0].used, "sensor.nas_main_pool_1_volume_1_used_size_raw");
+  assert.equal(ug.pools[0].disks.length, 4);
+  assert.deepEqual(ug.fans, ["sensor.nas_main_device_fan_1"]);
+  const syn = lib.homelabNasDetail(hass, items.find((i) => i.id === "dev_nas2"), items);
+  assert.equal(syn.scalars.cpu_usage, "sensor.nas_backup_cpu_utilization_total");
+  assert.equal(syn.scalars.lan_down, "sensor.nas_backup_download_throughput");
+  assert.equal(syn.scalars.sys_temp, "sensor.nas_backup_temperature");
+  assert.equal(syn.pools[0].volumes[0].used_pct, "sensor.nas_backup_volume_1_volume_used");
+  assert.equal(syn.pools[0].disks.length, 4);
+  assert.equal(lib.homelabNasDetail({ states }, items[0], items), null, "no registries, no detail");
+});
+
+test("Docker environments: Dockhand's stacks and containers, their figures", () => {
+  const hass = { states, entities, devices };
+  const [env] = lib.homelabDockerEnvs(hass);
+  assert.equal(env.name, "docker-host");
+  assert.equal(env.stacks.length, 4);
+  assert.equal(env.containers.length, 8);
+  const st = lib.homelabDockerStats(hass, env);
+  assert.deepEqual([st.cpu, st.mem, st.running, st.containers, st.updates], [12, 58, 6, 8, 3]);
+  const ml = lib.homelabContainerStats(hass, env.containers.find((c) => c.name === "immich-ml"));
+  assert.equal(ml.cls, "crit");
+  assert.equal(ml.on, false);
+  const kuma = lib.homelabContainerStats(hass, env.containers.find((c) => c.name === "uptime-kuma"));
+  assert.equal(kuma.update.entity_id, "update.uptime_kuma");
+  assert.equal(kuma.cls, "ok");
+});
+
+test("the rich Storage and Containers tabs, the image update asked first", async () => {
+  const extra = { entities, devices };
+  const storage = panel("/storage", extra).html();
+  assert.match(storage, /RAID5/);
+  assert.match(storage, /M\.2 slot 4/);
+  assert.match(storage, /data-entity="button\.nas_main_power_action_shutdown"/);
+  assert.doesNotMatch(storage, /undefined|NaN|\[object Object\]/);
+  const { p, calls, html } = panel("/containers", extra);
+  assert.match(html(), /data-act="install"/);
+  assert.match(html(), /Needing attention/);
+  assert.doesNotMatch(html(), /undefined|NaN|\[object Object\]/);
+  p._onClick({ composedPath: () => [{ dataset: { ctproblems: "" } }], target: null });
+  assert.doesNotMatch(html(), />vaultwarden</, "only containers needing attention");
+  const click = (dataset) => p._onClick({ composedPath: () => [{ dataset, tagName: "BUTTON" }], target: null });
+  click({ act: "install", op: "install", entity: "update.uptime_kuma", name: "uptime-kuma", label: "Update" });
+  assert.match(html(), /role="dialog"/);
+  click({ confirm: "" });
+  await new Promise((r) => setTimeout(r));
+  assert.deepEqual(calls, [["update", "install", { entity_id: "update.uptime_kuma" }]]);
 });

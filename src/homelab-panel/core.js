@@ -12,7 +12,7 @@
  * English is built in; the other languages are loaded on demand from /homelab_panel/i18n/<lang>.json.
  */
 
-export const HOMELAB_PANEL_VERSION = "1.0.4";
+export const HOMELAB_PANEL_VERSION = "1.1.0";
 export const HOMELAB_TABS = ["overview", "hosts", "containers", "storage", "services", "backups", "settings"];
 export const HOMELAB_SOURCES = ["proxmox", "docker", "nas", "ups", "services", "proxy", "backups", "certificates"];
 // The integrations' own names, not translated
@@ -159,6 +159,26 @@ export const HOMELAB_EN = {
   set_show_stopped: "Show stopped machines and containers",
   set_cert_days: "Warn about certificates expiring within (days)",
   set_disk_temp: "Warn about disks above (°C)",
+  system: "System",
+  net_down: "Download",
+  net_up: "Upload",
+  fans: "Fans",
+  rpm: "{n} rpm",
+  shutdown: "Shut down",
+  update_os: "Update available",
+  hours_on: "{n} h on",
+  stacks: "Stacks",
+  images: "Images",
+  networks: "Networks",
+  updates: "Updates",
+  search: "Search",
+  sort_name: "Name",
+  only_problems: "Needing attention",
+  unhealthy: "unhealthy",
+  install: "Update",
+  sync_error: "sync error",
+  containers_n: "containers: {n}",
+  no_problem: "Nothing needs attention.",
 };
 
 /** HTML-escaped text: every value read from a state or a registry goes through it. */

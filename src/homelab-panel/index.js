@@ -3,13 +3,17 @@
 import "./core.js";
 import "./drawings.js";
 import "./model.js";
+import "./detail.js";
 import "./scene.js";
 import "./styles.js";
 import "./tabs.js";
+import "./rich.js";
 import "./panel.js";
 // The assembled module's own exports (the other `export`s only join the modules)
 export { HOMELAB_EN, HOMELAB_LANGS, HOMELAB_PANEL_VERSION, homelabAgo, homelabBytes, homelabDuration, homelabEsc, homelabLang } from "./core.js";
 export { homelabNasSvg } from "./drawings.js";
 export { homelabModel } from "./model.js";
+export { homelabContainerStats, homelabDockerEnvs, homelabDockerStats, homelabNasDetail, homelabSpark } from "./detail.js";
+export { homelabContainersRich, homelabStorageRich } from "./rich.js";
 export { homelabScene } from "./scene.js";
 export { HomelabPanel } from "./panel.js";

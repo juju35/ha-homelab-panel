@@ -3,6 +3,8 @@
 import { HOMELAB_TABS, homelabEsc, homelabLang, homelabLoadStrings, homelabPill, homelabT, HOMELAB_EN } from "./core.js";
 import { homelabModel } from "./model.js";
 import { homelabScene } from "./scene.js";
+import { homelabDockerEnvs, homelabNasDetail } from "./detail.js";
+import { homelabContainersRich, homelabHistoryIds, homelabStorageRich } from "./rich.js";
 import { HOMELAB_STYLE } from "./styles.js";
 import { homelabBackups, homelabContainers, homelabHosts, homelabOverview, homelabServices, homelabSettings, homelabStorage } from "./tabs.js";
 
@@ -16,8 +18,14 @@ export class HomelabPanel extends HTMLElement {
     this._strings = HOMELAB_EN;
     this._filter = "all";
     this._sig = "";
+    // Containers list of the rich view: search, sort (name, cpu, ram), only those needing attention
+    this._ct = { query: "", sort: "name", problems: false };
+    this._hist = {};
+    this._histAt = 0;
+    this._watch = [];
     this.shadowRoot.addEventListener("click", (ev) => this._onClick(ev));
     this.shadowRoot.addEventListener("change", (ev) => this._onChange(ev));
+    this.shadowRoot.addEventListener("input", (ev) => this._onInput(ev));
   }
 
   set hass(hass) {
@@ -81,6 +89,8 @@ export class HomelabPanel extends HTMLElement {
     const s = this._hass?.states || {};
     let sig = `${this._hass?.themes?.darkMode}|`;
     for (const item of this._inv?.items || []) for (const id of Object.values(item.entities || {})) sig += `${s[id]?.last_updated || ""}${s[id]?.state || ""};`;
+    // The rich tabs read more entities than the inventory's roles: those of the last render
+    for (const id of this._watch) sig += `${s[id]?.last_updated || ""}${s[id]?.state || ""};`;
     return sig;
   }
 
@@ -96,8 +106,23 @@ export class HomelabPanel extends HTMLElement {
     const night = !!this._hass.themes?.darkMode;
     const t = (k, v) => this._t(k, v);
     const lang = this._lang();
-    const ctx = { t, lang, strings: this._strings, filter: this._filter };
     const m = homelabModel(this._inv, this._hass, this._settings);
+    const ctx = {
+      t,
+      lang,
+      strings: this._strings,
+      filter: this._filter,
+      hass: this._hass,
+      items: this._inv?.items || [],
+      hist: this._hist,
+      now: Date.now(),
+      diskTemp: this._settings?.disk_warning_temperature ?? 45,
+      showStopped: this._settings?.show_stopped ?? true,
+      ct: this._ct,
+    };
+    // Dockhand environments and Portainer endpoints the inventory keeps (a source left out in the settings is not shown)
+    const hostIds = new Set(m.dockerHosts.map((d) => d.id));
+    const envs = (homelabDockerEnvs(this._hass) || []).filter((e) => hostIds.has(e.id));
     // A tab with nothing to show is hidden once the inventory is known (overview and settings always stay)
     const has = {
       hosts: m.hosts.length || m.guests.length,
@@ -117,18 +142,86 @@ export class HomelabPanel extends HTMLElement {
       body = {
         overview: () => homelabOverview(m, ctx),
         hosts: () => homelabHosts(m, ctx),
-        containers: () => homelabContainers(m, ctx),
-        storage: () => homelabStorage(m, ctx),
+        containers: () => {
+          const rich = homelabContainersRich(ctx, envs);
+          if (!rich) return homelabContainers(m, ctx);
+          // Containers of Monitor Docker (no environment device) keep the table under the environments
+          const rest = m.containers.filter((x) => x.platform === "monitor_docker");
+          return rest.length ? `${rich}<div style="height:14px"></div>${homelabContainers({ ...m, containers: rest, shownContainers: m.shownContainers.filter((x) => x.platform === "monitor_docker") }, ctx)}` : rich;
+        },
+        storage: () => homelabStorageRich(m, ctx) ?? homelabStorage(m, ctx),
         services: () => homelabServices(m, ctx),
         backups: () => homelabBackups(m, ctx),
         settings: () => homelabSettings(this._inv, this._settings || {}, ctx),
       }[tab]();
+    this._watch = tab === "storage" || tab === "containers" ? this._watchIds(m, ctx, envs, tab) : [];
+    if (tab === "storage" || tab === "containers") this._loadHistory(homelabHistoryIds(tab === "storage" ? m : { nas: [] }, ctx, tab === "containers" ? envs : []));
     const alerts = m.alerts.length;
     const pill = this._inv ? homelabPill(alerts ? t("pill_alerts", { n: alerts }) : t("pill_ok"), alerts ? (m.alerts.some((a) => ["host", "service", "ups"].includes(a.kind)) ? "crit" : "warn") : "ok") : "";
     const names = [m.hosts.length && "Proxmox", m.containers.length && "Docker", m.nas.length && "NAS", m.ups.length && "UPS", m.services.length && "Uptime Kuma"].filter(Boolean).join(" · ");
     const scene = homelabScene({ width: Math.max(640, this.clientWidth || 1216), nas: m.nas.map((n) => ({ model: n.model, brand: n.brand })), ups: m.ups.length > 0 || !this._inv?.configured, rack: m.hosts.length > 0 || !this._inv?.configured, night });
     const tabs = shownTabs.map((k) => `<button data-tab="${k}" class="${k === tab ? "on" : ""}" ${k === tab ? 'aria-current="page"' : ""}>${homelabEsc(t(`tab_${k}`))}</button>`).join("");
+    const focus = this.shadowRoot.activeElement?.dataset?.ct;
+    const caret = focus ? this.shadowRoot.activeElement.selectionStart : null;
     this.shadowRoot.innerHTML = `<style>${HOMELAB_STYLE}</style><div class="wrap${night ? " night" : ""}"><header class="banner">${scene}<div class="htext"><div class="hicon">${HOMELAB_ICON}</div><div class="htitle"><div class="n">${t("title")}</div><div class="s">${homelabEsc(names)}</div></div>${pill}</div><button class="hbtn" data-refresh aria-label="${homelabEsc(t("refresh"))}" title="${homelabEsc(t("refresh"))}">${HOMELAB_REFRESH}</button></header><nav class="tabs" aria-label="${homelabEsc(t("title"))}">${tabs}</nav><main>${body}</main>${this._confirm ? this._confirmHtml() : ""}</div>`;
+    // The search field keeps its focus and caret across the render its typing asked for
+    if (focus) {
+      const input = this.shadowRoot.querySelector(`[data-ct="${focus}"]`);
+      if (input) {
+        input.focus();
+        if (caret !== null) input.setSelectionRange(caret, caret);
+      }
+    }
+  }
+
+  /** Every entity a rich tab reads, so a change of any of them renders it again. */
+  _watchIds(m, ctx, envs, tab) {
+    const ids = [];
+    if (tab === "storage")
+      for (const n of m.nas) {
+        const d = homelabNasDetail(this._hass, n, ctx.items);
+        if (!d) continue;
+        ids.push(...Object.values(d.scalars), ...d.fans);
+        for (const p of d.pools) {
+          for (const [k, v] of Object.entries(p)) if (typeof v === "string" && k !== "fallback") ids.push(v);
+          for (const x of [...p.volumes, ...p.disks]) for (const [k, v] of Object.entries(x)) if (typeof v === "string" && k !== "fallback" && k !== "modelText") ids.push(v);
+        }
+      }
+    else
+      for (const env of envs) {
+        ids.push(...Object.values(env.entities));
+        for (const x of [...env.stacks, ...env.containers]) ids.push(...Object.values(x.entities));
+      }
+    return [...new Set(ids.filter(Boolean))];
+  }
+
+  /** The last 24 hours of the tiles' entities, read again every 10 minutes (or when the list changes). */
+  async _loadHistory(ids) {
+    const key = ids.join(",");
+    if (!ids.length || (key === this._histKey && Date.now() - this._histAt < 600000)) return;
+    this._histKey = key;
+    this._histAt = Date.now();
+    try {
+      const end = new Date();
+      const res = await this._hass.callWS({
+        type: "history/history_during_period",
+        start_time: new Date(end.getTime() - 86400000).toISOString(),
+        end_time: end.toISOString(),
+        entity_ids: ids,
+        minimal_response: true,
+        no_attributes: true,
+        significant_changes_only: false,
+      });
+      const hist = {};
+      for (const id of ids)
+        hist[id] = (res?.[id] || [])
+          .map((p) => ({ t: (p.lu ?? p.last_updated_ts ?? Date.parse(p.last_updated || p.last_changed || "") / 1000) * 1000, v: Number.parseFloat(p.s ?? p.state) }))
+          .filter((p) => Number.isFinite(p.t) && Number.isFinite(p.v));
+      this._hist = hist;
+      this._render(true);
+    } catch (_) {
+      // No history (recorder off): the tiles stay without their curve
+    }
   }
 
   _confirmHtml() {
@@ -147,6 +240,7 @@ export class HomelabPanel extends HTMLElement {
   async _act(act, entity) {
     const [domain] = entity.split(".");
     if (act === "press") await this._hass.callService("button", "press", { entity_id: entity });
+    else if (act === "install") await this._hass.callService("update", "install", { entity_id: entity });
     else if (act === "toggle") await this._hass.callService(domain === "switch" ? "switch" : "homeassistant", "toggle", { entity_id: entity });
   }
 
@@ -163,6 +257,15 @@ export class HomelabPanel extends HTMLElement {
     if (!el) return;
     const d = el.dataset;
     if (d.tab) this._navigate(d.tab);
+    else if (d.more !== undefined) {
+      if (d.more) this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId: d.more }, bubbles: true, composed: true }));
+    } else if (d.ctsort) {
+      this._ct = { ...this._ct, sort: d.ctsort };
+      this._render(true);
+    } else if (d.ctproblems !== undefined) {
+      this._ct = { ...this._ct, problems: !this._ct.problems };
+      this._render(true);
+    }
     else if (d.filter) {
       this._filter = d.filter;
       this._render(true);
@@ -172,8 +275,8 @@ export class HomelabPanel extends HTMLElement {
       this._load();
     } else if (d.retry !== undefined) this._load();
     else if (d.act) {
-      const ask = d.act === "press" || d.act === "toggle";
-      if (ask && this._settings?.confirm_actions !== false && (d.op === "restart" || d.op === "stop")) {
+      const ask = d.act === "press" || d.act === "toggle" || d.act === "install";
+      if (ask && this._settings?.confirm_actions !== false && ["restart", "stop", "install"].includes(d.op)) {
         this._confirm = { act: d.act, entity: d.entity, name: d.name, label: d.label };
         this._render(true);
       } else this._act(d.act, d.entity);
@@ -184,6 +287,14 @@ export class HomelabPanel extends HTMLElement {
       this._act(c.act, c.entity);
     } else if (d.cancel !== undefined && (ev.target === el || el.tagName === "BUTTON")) {
       this._confirm = null;
+      this._render(true);
+    }
+  }
+
+  _onInput(ev) {
+    const el = ev.target;
+    if (el?.dataset?.ct === "query") {
+      this._ct = { ...this._ct, query: el.value };
       this._render(true);
     }
   }

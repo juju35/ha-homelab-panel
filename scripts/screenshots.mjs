@@ -3,7 +3,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
-import { inventory, NOW, states } from "./mock-states.mjs";
+import { devices, entities, historyOf, inventory, NOW, states } from "./mock-states.mjs";
 import { shots } from "./screenshot-shots.mjs";
 import { writeIfChanged } from "./screenshot-write.mjs";
 
@@ -50,14 +50,16 @@ async function open(s) {
   await page.goto(`${ORIGIN}/`);
   await page.addScriptTag({ url: "/homelab_panel/homelab-panel.js", type: "module" });
   await page.evaluate(
-    async ({ s, states, inventory }) => {
+    async ({ s, states, inventory, entities, devices, history }) => {
       const hass = {
         states,
+        entities,
+        devices,
         language: "en",
         locale: { language: "en" },
         user: { is_admin: true },
         themes: { darkMode: s.theme === "dark" },
-        callWS: async (msg) => (msg.type === "homelab_panel/inventory" ? inventory : { settings: inventory.settings }),
+        callWS: async (msg) => (msg.type === "homelab_panel/inventory" ? inventory : msg.type === "history/history_during_period" ? history : { settings: inventory.settings }),
         callService: async () => {},
       };
       await customElements.whenDefined("homelab-panel");
@@ -72,7 +74,7 @@ async function open(s) {
           el._render(true);
         }, 300);
     },
-    { s, states, inventory },
+    { s, states, inventory, entities, devices, history: historyOf(Object.keys(states)) },
   );
   await page.waitForTimeout(700);
   return page;
