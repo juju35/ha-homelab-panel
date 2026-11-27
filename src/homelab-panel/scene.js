@@ -20,9 +20,10 @@ const homelabAspect = (svg) => {
 
 /**
  * The scene's SVG, `width` wide (the panel's width less its sidebar): the drawings stay at the right, the title over
- * the sky at the left. `nas` lists the NAS ({ model, brand }), `night` picks the night palette.
+ * the sky at the left. `nas` lists the NAS ({ model, brand }), `ups` and `rack` (Proxmox) draw those, `night` picks
+ * the night palette.
  */
-export const homelabScene = ({ width = 1216, nas = [], ups = true, night = false } = {}) => {
+export const homelabScene = ({ width = 1216, nas = [], ups = true, rack = true, night = false } = {}) => {
   const c = night ? HOMELAB_SKY.night : HOMELAB_SKY.day;
   const w = Math.max(640, Math.round(width));
   const right = w - 120; // the refresh button sits over the sky at the far right
@@ -52,7 +53,7 @@ export const homelabScene = ({ width = 1216, nas = [], ups = true, night = false
     cables.push(x - wd - 8);
     x -= wd + 12;
   });
-  if (fits(99)) parts.push(homelabPlace(HOMELAB_PVE_SVG, "sc-pve", x - 99, 8, 99, 72));
+  if (rack && fits(99)) parts.push(homelabPlace(HOMELAB_PVE_SVG, "sc-pve", x - 99, 8, 99, 72));
   const stars = night
     ? [0.12, 0.2, 0.31, 0.44, 0.52, 0.63, 0.71, 0.86]
         .map((f, i) => `<circle cx="${Math.round(w * f)}" cy="${10 + ((i * 17) % 34)}" r="${i % 3 ? 0.9 : 1.3}" fill="#FFFFFF" opacity=".8"/>`)

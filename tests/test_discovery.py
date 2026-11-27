@@ -178,3 +178,26 @@ async def test_ugreen_parts_on_devices_of_their_own(hass: HomeAssistant):
     assert items["Storage pool 1"].parent == nas.id
     assert items["M.2 drive 1"].kind == "disk"
     assert items["M.2 drive 1"].parent == nas.id
+
+
+async def test_devices_without_nas_readings_are_not_nas(hass: HomeAssistant):
+    """An entry of a NAS integration whose devices only carry an update or a button (no CPU, storage or heat) adds
+    no NAS; a volume's own sizes win over its pool's (always full)."""
+    entry = _entry(hass, "ugreen")
+    nas = _device(hass, entry, "nas", "UGREEN NAS", "UGREEN DXP480T Plus")
+    _entity(hass, entry, "sensor", "ugreen_nas_cpu_usage", nas, "cpu_usage")
+    _entity(hass, entry, "sensor", "ugreen_nas_pool_1_total_size", nas)
+    _entity(hass, entry, "sensor", "ugreen_nas_pool_1_used_size", nas)
+    vol_total = _entity(hass, entry, "sensor", "ugreen_nas_pool_1_volume_1_total_size", nas)
+    vol_used = _entity(hass, entry, "sensor", "ugreen_nas_pool_1_volume_1_used_size", nas)
+    for key in ("device_select", "entity_filter"):
+        other = _entry(hass, "ugreen")
+        dev = _device(hass, other, key, f"UGREEN NAS Lovelace {key}", "plugin")
+        _entity(hass, other, "update", f"{key}_update", dev)
+
+    inv = async_inventory(hass, ["nas"])
+    found = [i for i in inv.items if i.kind == "nas"]
+    assert [i.name for i in found] == ["UGREEN NAS"]
+    assert found[0].entities["volume_used"] == vol_used
+    assert found[0].entities["volume_total"] == vol_total
+    assert len(inv.items) == 1

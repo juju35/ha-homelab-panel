@@ -126,7 +126,7 @@ export class HomelabPanel extends HTMLElement {
     const alerts = m.alerts.length;
     const pill = this._inv ? homelabPill(alerts ? t("pill_alerts", { n: alerts }) : t("pill_ok"), alerts ? (m.alerts.some((a) => ["host", "service", "ups"].includes(a.kind)) ? "crit" : "warn") : "ok") : "";
     const names = [m.hosts.length && "Proxmox", m.containers.length && "Docker", m.nas.length && "NAS", m.ups.length && "UPS", m.services.length && "Uptime Kuma"].filter(Boolean).join(" · ");
-    const scene = homelabScene({ width: Math.max(640, this.clientWidth || 1216), nas: m.nas.map((n) => ({ model: n.model, brand: n.brand })), ups: m.ups.length > 0 || !this._inv?.configured, night });
+    const scene = homelabScene({ width: Math.max(640, this.clientWidth || 1216), nas: m.nas.map((n) => ({ model: n.model, brand: n.brand })), ups: m.ups.length > 0 || !this._inv?.configured, rack: m.hosts.length > 0 || !this._inv?.configured, night });
     const tabs = shownTabs.map((k) => `<button data-tab="${k}" class="${k === tab ? "on" : ""}" ${k === tab ? 'aria-current="page"' : ""}>${homelabEsc(t(`tab_${k}`))}</button>`).join("");
     this.shadowRoot.innerHTML = `<style>${HOMELAB_STYLE}</style><div class="wrap${night ? " night" : ""}"><header class="banner">${scene}<div class="htext"><div class="hicon">${HOMELAB_ICON}</div><div class="htitle"><div class="n">${t("title")}</div><div class="s">${homelabEsc(names)}</div></div>${pill}</div><button class="hbtn" data-refresh aria-label="${homelabEsc(t("refresh"))}" title="${homelabEsc(t("refresh"))}">${HOMELAB_REFRESH}</button></header><nav class="tabs" aria-label="${homelabEsc(t("title"))}">${tabs}</nav><main>${body}</main>${this._confirm ? this._confirmHtml() : ""}</div>`;
   }

@@ -111,8 +111,15 @@ ROLES: dict[str, list[Rule]] = {
     ],
     "nas": [
         ("status", ("sensor", "binary_sensor"), r"(^|[_ ])status($|[_ ])|health|security"),
-        ("volume", ("sensor",), r"(volume|storage|pool).*(percent|usage|used)|(percent|usage)_(volume|storage|pool)"),
+        (
+            "volume",
+            ("sensor",),
+            r"(volume|storage|pool).*(percent|usage)|(percent|usage)_(volume|storage|pool)",
+        ),
+        # A volume's own sizes first: a UGREEN pool's "used" size is the space given to its volumes, so always full
+        ("volume_used", ("sensor",), r"volume_\d+_(used_size|size_used)($|_raw)"),
         ("volume_used", ("sensor",), r"(volume|storage|pool).*(size_used|used_size|used$)"),
+        ("volume_total", ("sensor",), r"volume_\d+_(total_size|size_total)($|_raw)"),
         ("volume_total", ("sensor",), r"(volume|storage|pool).*(size_total|total_size|total$|capacity)"),
         ("temperature", ("sensor",), r"temperature|(^|[_ ])temp($|[_ ])"),
         ("cpu", ("sensor",), r"cpu"),
@@ -177,16 +184,19 @@ def _key(entry: er.RegistryEntry) -> str:
 
 
 def _roles(kind: str, entries: Iterable[er.RegistryEntry]) -> dict[str, str]:
-    """Each entity's role for this kind, the first entity found keeping a role."""
+    """Each entity's role for this kind: rules in order (a role listed twice tries its first pattern first), the first
+    entity matching a rule keeping its role, one role per entity."""
     found: dict[str, str] = {}
+    taken: set[str] = set()
     base = "guest" if kind.startswith("guest") else kind
-    rules = ROLES.get(base, [])
-    for entry in sorted(entries, key=lambda e: e.entity_id):
-        domain = entry.entity_id.split(".", 1)[0]
-        key = _key(entry)
-        for role, domains, pattern in rules:
-            if role not in found and domain in domains and re.search(pattern, key):
-                found[role] = entry.entity_id
+    keyed = [(e.entity_id, e.entity_id.split(".", 1)[0], _key(e)) for e in sorted(entries, key=lambda e: e.entity_id)]
+    for role, domains, pattern in ROLES.get(base, []):
+        if role in found:
+            continue
+        for entity_id, domain, key in keyed:
+            if entity_id not in taken and domain in domains and re.search(pattern, key):
+                found[role] = entity_id
+                taken.add(entity_id)
                 break
     return found
 
@@ -235,6 +245,9 @@ NAS_MODEL_RE = re.compile(
 )
 
 
+NAS_METRICS = {"cpu", "ram", "temperature", "volume", "volume_used", "volume_total"}
+
+
 def _entry_id(dev: dr.DeviceEntry) -> str:
     """The device's config entry: config_entry_id on recent Home Assistant, else its first config entry."""
     if hasattr(type(dev), "config_entry_id"):
@@ -265,14 +278,17 @@ def _nas_kinds(
     for devs in by_entry.values():
         roots = [d for d in devs if not d.via_device_id or d.via_device_id not in devices]
         nas = [d for d in roots if NAS_MODEL_RE.search(str(d.model or ""))]
-        if not nas and roots:
-            nas = [max(roots, key=lambda d: len(by_device.get(d.id, [])))]
+        if not nas:
+            # No NAS model: the root with the most entities, if it reports what a NAS does (CPU, storage, heat…);
+            # devices that only carry an update or a button (a dashboard plugin, an add-on) are not a NAS
+            metered = [d for d in roots if NAS_METRICS & set(_roles("nas", by_device.get(d.id, [])))]
+            nas = [max(metered, key=lambda d: len(by_device.get(d.id, [])))] if metered else []
         for d in devs:
             if d in nas:
                 out[d.id] = ("nas", None)
                 continue
             parent = d.via_device_id if d.via_device_id in devices else (nas[0].id if len(nas) == 1 else None)
-            out[d.id] = (_part_kind(d), parent)
+            out[d.id] = (_part_kind(d) if nas else None, parent)
     return out
 
 
