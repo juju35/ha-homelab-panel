@@ -259,12 +259,13 @@ def _part_kind(device: dr.DeviceEntry) -> str | None:
     """A disk, volume or pool of a NAS, by its name or model; None for another part (fan, network interface…)."""
     text = " ".join(str(x) for x in (device.model, device.name) if x).lower()
     # A pool (UGREEN, QNAP) holds the volumes: its "used" size is what it gave them, so it is no usage of its own
+    # UGREEN names its parts after their pool ("UGREEN NAS (Pool 1 | Disk 1)"): a volume or a disk first, then a pool
     if re.search(r"volume", text):
         return "volume"
-    if re.search(r"pool|storage|raid", text):
-        return "pool"
     if re.search(r"disk|drive|hdd|ssd|nvme|m\.2|sata", text):
         return "disk"
+    if re.search(r"pool|storage|raid", text):
+        return "pool"
     return None
 
 

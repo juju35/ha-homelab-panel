@@ -160,7 +160,8 @@ dev("dev_nas1_p1", "nas-main (Pool 1)", "UGREEN RAID5 pool", "dev_nas1");
 dev("dev_nas1_v1", "nas-main (Pool 1 | Volume 1)", "UGREEN btrfs volume", "dev_nas1");
 item("dev_nas1_p1", "pool", "nas", "ugreen", "nas-main (Pool 1)", {}, { parent: "dev_nas1" });
 item("dev_nas1_v1", "volume", "nas", "ugreen", "nas-main (Pool 1 | Volume 1)", {}, { parent: "dev_nas1" });
-const ug = (key, state, attributes = {}, device = "dev_nas1", domain = "sensor") => reg(set(`${domain}.nas_main_${key}`, state, attributes), device, "ugreen");
+// UGREEN's states carry their NAS's id (UGNAS_device_id), as ha-nas-card reads them
+const ug = (key, state, attributes = {}, device = "dev_nas1", domain = "sensor") => reg(set(`${domain}.nas_main_${key}`, state, { ...attributes, UGNAS_device_id: "ug1" }), device, "ugreen");
 ug("cpu_usage", 18, { unit_of_measurement: "%" });
 reg("sensor.nas_main_cpu_temperature", "dev_nas1", "ugreen");
 ug("cpu_model", "Intel Core i5-1235U");
