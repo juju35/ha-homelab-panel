@@ -160,6 +160,11 @@ tr:last-child td { border-bottom:0; }
 .ppic svg { max-width:100%; display:block; }
 .pwhale { display:block; width:150px; max-width:100%; height:62px; overflow:hidden; border-radius:10px; }
 .pwhale svg { width:100%; height:100%; }
+.penv { position:relative; display:inline-flex; align-items:flex-end; justify-content:center; height:66px; }
+.phass { width:62px; height:62px; border-radius:16px; background:#fff; display:grid; place-items:center; box-shadow:0 1px 3px rgba(0,0,0,.18); }
+.phass svg { width:44px; height:44px; }
+.pbadge { position:absolute; right:-12px; bottom:-4px; width:28px; height:28px; border-radius:50%; background:#fff; display:grid; place-items:center; box-shadow:0 1px 3px rgba(0,0,0,.25); }
+.pbadge svg { width:20px; height:20px; }
 .pnode b { font-size:13.5px; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .pnode .pl { font-size:12px; color:var(--hl-muted); max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .pnode .chip { margin-top:5px; }

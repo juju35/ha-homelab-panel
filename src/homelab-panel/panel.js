@@ -6,7 +6,7 @@ import { homelabScene } from "./scene.js";
 import { homelabDockerEnvs, homelabNasDetail } from "./detail.js";
 import { homelabBackupSources } from "./backup.js";
 import { homelabBackupsRich, homelabContainersRich, homelabHistoryIds, homelabOverviewHistoryIds, homelabOverviewRich, homelabStorageRich } from "./rich.js";
-import { HOMELAB_DOCKER_SVG, HOMELAB_PVE_SVG, HOMELAB_UPS_SVG, homelabNasSvg, homelabSized, homelabUid } from "./drawings.js";
+import { HOMELAB_DOCKER_SVG, HOMELAB_MDI_DOCKER, HOMELAB_MDI_HASS, HOMELAB_PVE_SVG, HOMELAB_UPS_SVG, homelabNasSvg, homelabSized, homelabUid } from "./drawings.js";
 import { HOMELAB_STYLE } from "./styles.js";
 import { homelabBackups, homelabContainers, homelabHosts, homelabOverview, homelabServices, homelabSettings, homelabStorage } from "./tabs.js";
 
@@ -183,14 +183,24 @@ export class HomelabPanel extends HTMLElement {
   /** The plan's drawings: the cards' own (Proxmox rack, Docker whale, each NAS from its model, the UPS). */
   _planArt() {
     const fit = (svg, uid, h) => homelabUid(svg, uid).replace(/^<svg\b/, `<svg height="${h}" aria-hidden="true" focusable="false"`);
+    const nasArt = (n, uid) => {
+      const svg = homelabNasSvg(n.model, n.brand);
+      const vb = svg.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/);
+      return fit(svg, uid, vb && +vb[1] / +vb[2] > 2.2 ? 38 : 62);
+    };
     return {
       pve: fit(HOMELAB_PVE_SVG, "pl-pve", 66),
       docker: `<span class="pwhale">${homelabSized(homelabUid(HOMELAB_DOCKER_SVG, "pl-dk"), "xMaxYMax slice")}</span>`,
-      nas: (n) => {
-        const svg = homelabNasSvg(n.model, n.brand);
-        const vb = svg.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/);
-        const flat = vb && +vb[1] / +vb[2] > 2.2;
-        return fit(svg, `pl-${String(n.id).replace(/\W/g, "")}`, flat ? 38 : 62);
+      nas: (n) => nasArt(n, `pl-${String(n.id).replace(/\W/g, "")}`),
+      // A Docker host: the machine it runs on when its name says so (Home Assistant, a NAS), with Docker's badge
+      env: (env, nasList) => {
+        const name = String(env.name || "").toLowerCase();
+        const badge = `<span class="pbadge"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="#1D63ED" d="${HOMELAB_MDI_DOCKER}"/></svg></span>`;
+        if (/home\s*assistant|hass|\bha\b/.test(name))
+          return `<span class="penv"><span class="phass"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="#18BCF2" d="${HOMELAB_MDI_HASS}"/></svg></span>${badge}</span>`;
+        const nas = nasList.find((n) => name && (name.includes(String(n.name).toLowerCase()) || String(n.name).toLowerCase().includes(name))) || (/nas|synology|ugreen|qnap|asustor|terramaster/.test(name) ? nasList[0] : null);
+        if (nas) return `<span class="penv">${nasArt(nas, `pl-env-${String(env.id).replace(/\W/g, "")}`)}${badge}</span>`;
+        return `<span class="pwhale">${homelabSized(homelabUid(HOMELAB_DOCKER_SVG, `pl-dk-${String(env.id).replace(/\W/g, "")}`), "xMaxYMax slice")}</span>`;
       },
       ups: fit(HOMELAB_UPS_SVG, "pl-ups", 62),
       upsSmall: fit(HOMELAB_UPS_SVG, "pl-ups-s", 34),

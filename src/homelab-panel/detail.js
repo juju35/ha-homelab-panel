@@ -89,9 +89,17 @@ export const homelabNasDetail = (hass, nas, items) => {
   if (!hass?.entities || !nas) return null;
   const parts = items.filter((i) => i.parent === nas.id);
   const ids = new Set([nas.id, ...parts.map((p) => p.id)]);
-  const ents = homelabEntitiesOf(hass, ids);
+  let ents = homelabEntitiesOf(hass, ids);
   const out = { scalars: {}, fans: [], pools: [] };
   if (nas.platform === "ugreen") {
+    // Like ha-nas-card: every state carrying this NAS's UGNAS_device_id, whatever device holds it
+    const ug = new Set(ents.map((e) => hass.states[e.entity_id]?.attributes?.UGNAS_device_id).filter(Boolean));
+    if (ug.size) {
+      const known = new Set(ents.map((e) => e.entity_id));
+      for (const [id, st] of Object.entries(hass.states || {}))
+        if (!known.has(id) && ug.has(st?.attributes?.UGNAS_device_id)) ents.push({ entity_id: id });
+      ents = ents.sort((a, b) => a.entity_id.localeCompare(b.entity_id));
+    }
     const pools = {};
     const pool = (n) => (pools[n] ??= { volumes: {}, disks: {} });
     for (const e of ents) {

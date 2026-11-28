@@ -274,3 +274,19 @@ test("the overview: the plan, what needs attention with its action, resources, s
   assert.match(html, /Backups, power and certificates/);
   assert.doesNotMatch(html, /undefined|NaN|\[object Object\]/);
 });
+
+test("NAS detail: UGREEN's states found by their UGNAS id, whatever device holds them", () => {
+  // The volume's entities on no device the inventory knows: still read, as ha-nas-card does
+  const ents = Object.fromEntries(Object.entries(entities).filter(([, e]) => e.device_id !== "dev_nas1_v1"));
+  const d = lib.homelabNasDetail({ states, entities: ents, devices }, inventory.items.find((i) => i.id === "dev_nas1"), inventory.items);
+  assert.equal(d.pools[0].volumes[0].used, "sensor.nas_main_pool_1_volume_1_used_size_raw");
+});
+
+test("the plan draws a Docker host as the machine it runs on", () => {
+  const { p } = panel("/overview", { entities, devices });
+  const art = p._planArt();
+  assert.match(art.env({ id: "a", name: "Home Assistant" }, []), /#18BCF2/);
+  const nas = inventory.items.find((i) => i.id === "dev_nas1");
+  assert.match(art.env({ id: "b", name: "Nas" }, [{ ...nas, brand: "ugreen" }]), /pbadge/);
+  assert.match(art.env({ id: "c", name: "docker-host" }, []), /pwhale/);
+});

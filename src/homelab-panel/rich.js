@@ -302,6 +302,7 @@ export const homelabNasFigures = (c, n) => {
     total: total ?? n.total,
     temp: homelabNum(c.hass, s.sys_temp) ?? homelabNum(c.hass, s.cpu_temp) ?? n.temp,
     cpu: homelabNum(c.hass, s.cpu_usage) ?? n.cpu,
+    ram: homelabNum(c.hass, s.ram_usage) ?? n.ram,
     cpuId: s.cpu_usage || n.entities.cpu,
     downId: s.lan_down,
     down: homelabRateOf(c.hass, s.lan_down),
@@ -333,7 +334,7 @@ export const homelabOverviewRich = (m, c, envs, sources, started, art) => {
       const total = st.containers ?? env.containers.length;
       const running = st.running ?? env.containers.filter((ct) => homelabContainerStats(hass, ct).cls === "ok").length;
       const stopped = total - running;
-      nodes.push(homelabPlanNode(art.docker, env.name, [t("running_of", { running, total }), st.updates ? t("updates_n", { n: st.updates }) : `${t("cpu")} ${homelabRichPct(st.cpu, lang)}`], stopped ? "crit" : st.updates ? "warn" : "ok", stopped ? t("stopped_n", { n: stopped }) : t("all_running"), "containers"));
+      nodes.push(homelabPlanNode(art.env(env, m.nas), env.name, [t("running_of", { running, total }), st.updates ? t("updates_n", { n: st.updates }) : `${t("cpu")} ${homelabRichPct(st.cpu, lang)}`], stopped ? "crit" : st.updates ? "warn" : "ok", stopped ? t("stopped_n", { n: stopped }) : t("all_running"), "containers"));
     }
   else if (m.containers.length) {
     const stopped = m.containers.filter((x) => !x.up).length;
@@ -341,7 +342,10 @@ export const homelabOverviewRich = (m, c, envs, sources, started, art) => {
   }
   const nasFig = m.nas.map((n) => ({ n, f: homelabNasFigures(c, n) }));
   for (const { n, f } of nasFig)
-    nodes.push(homelabPlanNode(art.nas(n), n.name, [f.used !== null && f.total ? `${homelabRichPct(f.pct, lang)} · ${homelabBytes(f.used, lang)} / ${homelabBytes(f.total, lang)}` : homelabRichPct(f.pct, lang), f.temp !== null ? `${homelabFmt(f.temp, lang)} °C` : ""], f.healthy ? (f.pct !== null && f.pct >= 90 ? "warn" : "ok") : "warn", f.healthy ? t("healthy") : t("attention"), "storage"));
+    nodes.push(homelabPlanNode(art.nas(n), n.name, [
+      f.used !== null && f.total ? `${homelabRichPct(f.pct, lang)} · ${homelabBytes(f.used, lang)} / ${homelabBytes(f.total, lang)}` : f.pct !== null ? homelabRichPct(f.pct, lang) : `${t("cpu")} ${homelabRichPct(f.cpu, lang)} · ${t("ram")} ${homelabRichPct(f.ram, lang)}`,
+      [f.temp !== null ? `${homelabFmt(f.temp, lang)} °C` : "", f.pct !== null && f.cpu !== null ? `${t("cpu")} ${homelabRichPct(f.cpu, lang)}` : "", f.down !== null ? `↓ ${homelabRate(f.down, lang)}` : ""].filter(Boolean).join(" · "),
+    ], f.healthy ? (f.pct !== null && f.pct >= 90 ? "warn" : "ok") : "warn", f.healthy ? t("healthy") : t("attention"), "storage"));
   for (const u of m.ups)
     nodes.push(homelabPlanNode(art.ups, u.name, [`${homelabRichPct(u.battery, lang)} · ${homelabDuration(u.runtime, c.strings)}`, u.power !== null ? `${homelabFmt(u.power, lang)} W` : ""], u.onBattery ? "warn" : "ok", u.onBattery ? t("on_battery") : t("on_mains"), "storage"));
   const plan = nodes.length ? `<div class="card plan"><div class="pnodes">${nodes.join('<span class="plink" aria-hidden="true"></span>')}</div></div>` : "";
