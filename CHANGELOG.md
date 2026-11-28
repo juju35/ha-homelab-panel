@@ -4,6 +4,7 @@
 
 ### Fixes
 - UGREEN NAS: every state carrying the NAS's UGNAS id is read, whatever device holds it, as ha-nas-card does: its volumes' usage now shows on the overview and the Storage tab.
+- A UGREEN disk named after its pool (« UGREEN NAS (Pool 1 | Disk 1) ») is a disk again, not a pool.
 - Overview plan: a Docker host is drawn as the machine it runs on when its name says so (Home Assistant's logo, the NAS of that name) with Docker's badge; a NAS shows its CPU and RAM when its usage is unknown, and its network rate.
 
 ## 1.1.0 - 2026-11-27

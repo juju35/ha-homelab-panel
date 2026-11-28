@@ -237,3 +237,15 @@ async def test_entities_without_device_are_not_nas(hass: HomeAssistant):
     assert [n for n, k in kinds.items() if k == "nas"] == ["UGREEN NAS"]
     assert kinds["UGREEN NAS (Pool 1 | Volume 1)"] == "volume"
     assert kinds["UGREEN NAS (Pool 1)"] == "pool"
+
+
+async def test_ugreen_disk_named_after_its_pool_is_a_disk(hass: HomeAssistant):
+    """UGREEN names a disk after its pool, « UGREEN NAS (Pool 1 | Disk 1) »: still a disk, not a pool."""
+    entry = _entry(hass, "ugreen")
+    nas = _device(hass, entry, "nas", "UGREEN NAS", "UGREEN DXP480T Plus")
+    _entity(hass, entry, "sensor", "ugreen_nas_cpu_usage", nas, "cpu_usage")
+    disk = _device(hass, entry, "d1", "UGREEN NAS (Pool 1 | Disk 1)", "Samsung SSD 990 EVO Plus 2TB", via=nas)
+    _entity(hass, entry, "sensor", "ugreen_nas_pool_1_disk_1_temperature", disk)
+
+    inv = async_inventory(hass, ["nas"])
+    assert {i.name: i.kind for i in inv.items}["UGREEN NAS (Pool 1 | Disk 1)"] == "disk"
