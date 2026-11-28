@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.2 - 2026-11-28
+
+### Fixes
+- The sidebar's menu button is back in the header on a phone (narrow screen) and when the sidebar is hidden.
+
 ## 1.1.1 - 2026-11-28
 
 ### Fixes
