@@ -290,3 +290,18 @@ test("the plan draws a Docker host as the machine it runs on", () => {
   assert.match(art.env({ id: "b", name: "Nas" }, [{ ...nas, brand: "ugreen" }]), /pbadge/);
   assert.match(art.env({ id: "c", name: "docker-host" }, []), /pwhale/);
 });
+
+test("a language file is fetched with the version, so an update never shows a cached older one", async () => {
+  const urls = [];
+  const saved = globalThis.fetch;
+  globalThis.fetch = async (url) => {
+    urls.push(url);
+    return { ok: true, json: async () => ({ title: "Homelab" }) };
+  };
+  try {
+    assert.equal((await lib.homelabLoadStrings("sv")).title, "Homelab");
+  } finally {
+    globalThis.fetch = saved;
+  }
+  assert.deepEqual(urls, [`/homelab_panel/i18n/sv.json?v=${lib.HOMELAB_PANEL_VERSION}`]);
+});

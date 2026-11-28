@@ -12,7 +12,7 @@
  * English is built in; the other languages are loaded on demand from /homelab_panel/i18n/<lang>.json.
  */
 
-export const HOMELAB_PANEL_VERSION = "1.1.2";
+export const HOMELAB_PANEL_VERSION = "1.1.3";
 export const HOMELAB_TABS = ["overview", "hosts", "containers", "storage", "services", "backups", "settings"];
 export const HOMELAB_SOURCES = ["proxmox", "docker", "nas", "ups", "services", "proxy", "backups", "certificates"];
 // The integrations' own names, not translated
@@ -212,13 +212,16 @@ export const homelabLang = (code) => {
 };
 
 const homelabStringCache = new Map();
-/** The strings of a language (English filled in for a missing key), loaded once from /homelab_panel/i18n/. */
+/**
+ * The strings of a language (English filled in for a missing key), loaded once from /homelab_panel/i18n/ with the
+ * version: the files are cached for long, so an update must not show an older one.
+ */
 export const homelabLoadStrings = async (lang) => {
   if (lang === "en") return HOMELAB_EN;
   if (!homelabStringCache.has(lang))
     homelabStringCache.set(
       lang,
-      fetch(`/homelab_panel/i18n/${lang}.json`)
+      fetch(`/homelab_panel/i18n/${lang}.json?v=${HOMELAB_PANEL_VERSION}`)
         .then((r) => (r.ok ? r.json() : {}))
         .catch(() => ({}))
         .then((s) => ({ ...HOMELAB_EN, ...s })),
