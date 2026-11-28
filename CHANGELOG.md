@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.3 - 2026-11-28
+
+### Fixes
+- After an update, the panel no longer shows English words in another language: the language file is fetched with the version, so the browser never keeps an older one.
+
 ## 1.1.2 - 2026-11-28
 
 ### Fixes

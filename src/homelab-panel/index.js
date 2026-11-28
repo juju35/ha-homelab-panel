@@ -11,7 +11,7 @@ import "./tabs.js";
 import "./rich.js";
 import "./panel.js";
 // The assembled module's own exports (the other `export`s only join the modules)
-export { HOMELAB_EN, HOMELAB_LANGS, HOMELAB_PANEL_VERSION, homelabAgo, homelabBytes, homelabDuration, homelabEsc, homelabLang } from "./core.js";
+export { HOMELAB_EN, HOMELAB_LANGS, HOMELAB_PANEL_VERSION, homelabAgo, homelabBytes, homelabDuration, homelabEsc, homelabLang, homelabLoadStrings } from "./core.js";
 export { homelabNasSvg } from "./drawings.js";
 export { homelabModel } from "./model.js";
 export { homelabContainerStats, homelabDockerEnvs, homelabDockerStats, homelabNasDetail, homelabSpark } from "./detail.js";
