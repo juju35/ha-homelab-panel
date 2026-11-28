@@ -15,6 +15,7 @@ export const HOMELAB_STYLE = `
 button { font:inherit; color:inherit; cursor:pointer; }
 .banner { position:relative; height:90px; overflow:hidden; }
 .banner .scene { position:absolute; inset:0; width:100%; height:90px; display:block; }
+.htext ha-menu-button { flex:none; color:inherit; margin-right:-4px; }
 .htext { position:absolute; left:16px; top:0; bottom:10px; right:72px; display:flex; align-items:center; gap:12px; min-width:0; }
 .hicon { width:44px; height:44px; border-radius:50%; background:#fff; display:grid; place-items:center; flex-shrink:0;
   box-shadow:0 2px 8px rgba(14,154,167,.22); color:#0A7680; }

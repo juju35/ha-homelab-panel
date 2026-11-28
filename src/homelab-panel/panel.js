@@ -45,6 +45,7 @@ export class HomelabPanel extends HTMLElement {
     }
     if (first) this._load();
     else this._render();
+    this._menu();
   }
 
   get hass() {
@@ -60,7 +61,18 @@ export class HomelabPanel extends HTMLElement {
     this._panel = panel;
   }
 
-  set narrow(_) {}
+  set narrow(narrow) {
+    this._narrow = narrow;
+    this._menu();
+  }
+
+  /** Home Assistant's menu button (shown on a narrow screen or with the sidebar hidden) needs hass and narrow. */
+  _menu() {
+    const menu = this.shadowRoot?.querySelector("ha-menu-button");
+    if (!menu) return;
+    menu.hass = this._hass;
+    menu.narrow = this._narrow;
+  }
 
   /** The language: the full code, then its base, then English. */
   _lang() {
@@ -169,7 +181,8 @@ export class HomelabPanel extends HTMLElement {
     const tabs = shownTabs.map((k) => `<button data-tab="${k}" class="${k === tab ? "on" : ""}" ${k === tab ? 'aria-current="page"' : ""}>${homelabEsc(t(`tab_${k}`))}</button>`).join("");
     const focus = this.shadowRoot.activeElement?.dataset?.ct;
     const caret = focus ? this.shadowRoot.activeElement.selectionStart : null;
-    this.shadowRoot.innerHTML = `<style>${HOMELAB_STYLE}</style><div class="wrap${night ? " night" : ""}"><header class="banner">${scene}<div class="htext"><div class="hicon">${HOMELAB_ICON}</div><div class="htitle"><div class="n">${t("title")}</div><div class="s">${homelabEsc(names)}</div></div>${pill}</div><button class="hbtn" data-refresh aria-label="${homelabEsc(t("refresh"))}" title="${homelabEsc(t("refresh"))}">${HOMELAB_REFRESH}</button></header><nav class="tabs" aria-label="${homelabEsc(t("title"))}">${tabs}</nav><main>${body}</main>${this._confirm ? this._confirmHtml() : ""}</div>`;
+    this.shadowRoot.innerHTML = `<style>${HOMELAB_STYLE}</style><div class="wrap${night ? " night" : ""}"><header class="banner">${scene}<div class="htext"><ha-menu-button></ha-menu-button><div class="hicon">${HOMELAB_ICON}</div><div class="htitle"><div class="n">${t("title")}</div><div class="s">${homelabEsc(names)}</div></div>${pill}</div><button class="hbtn" data-refresh aria-label="${homelabEsc(t("refresh"))}" title="${homelabEsc(t("refresh"))}">${HOMELAB_REFRESH}</button></header><nav class="tabs" aria-label="${homelabEsc(t("title"))}">${tabs}</nav><main>${body}</main>${this._confirm ? this._confirmHtml() : ""}</div>`;
+    this._menu();
     // The search field keeps its focus and caret across the render its typing asked for
     if (focus) {
       const input = this.shadowRoot.querySelector(`[data-ct="${focus}"]`);
